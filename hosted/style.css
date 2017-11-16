@@ -1,0 +1,23 @@
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.tweet {
+  border: 1px solid #ccc;
+  margin: 0 auto;
+  padding: 10px;
+  width: 40%;
+  background-color: aliceblue;
+}
+
+.tweet h4 {
+  margin: 0;
+}
+
+.tweet:hover {
+  /*cursor: pointer;*/
+  background-color: #e5eeff;
+}
