@@ -8,7 +8,20 @@ var handleTweet = function handleTweet(e) {
     return false;
   }
 
-  sendAjax('POST', $("#tweetForm").attr("action"), $("#tweetForm").serialize(), function () {
+  var queryString = $("#tweetForm").serialize();
+
+  var imgElem = document.getElementById('imageUpload');
+
+  if (imgElem) {
+    var imgData = JSON.stringify(getBase64Image(imgElem));
+
+    //console.log("imgData: " + imgData);
+    queryString += "&imgData=" + imgData;
+  }
+
+  //console.log(queryString);
+
+  sendAjax('POST', $("#tweetForm").attr("action"), queryString, function () {
     sendAjax('GET', '/getToken', null, function (result) {
       loadTweetsFromServer(result.csrfToken);
     });
@@ -34,10 +47,12 @@ var handleChange = function handleChange(e) {
   return false;
 };
 
-var handleDelete = function handleDelete(e) {
+var handleDelete = function handleDelete(e, csrf, tweetId) {
   e.preventDefault();
 
-  sendAjax('POST', $("#deleteTweetForm").attr("action"), $("#deleteTweetForm").serialize(), function () {
+  var queryString = "_csrf=" + csrf + "&_id=" + tweetId;
+
+  sendAjax('POST', '/delete', queryString, function () {
     sendAjax('GET', '/getToken', null, function (result) {
       loadTweetsFromServer(result.csrfToken);
     });
@@ -46,10 +61,42 @@ var handleDelete = function handleDelete(e) {
   return false;
 };
 
+var getBase64Image = function getBase64Image(imgElem) {
+  var canvas = document.createElement('canvas');
+  canvas.width = imgElem.clientWidth;
+  canvas.height = imgElem.clientHeight;
+  var ctx = canvas.getContext('2d');
+  ctx.drawImage(imgElem, 0, 0);
+  var dataURL = canvas.toDataURL('image/png');
+  return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+};
+
+var updateImageDisplay = function updateImageDisplay() {
+  var current = $("#file")[0].files;
+
+  if (current.length === 0) {
+    console.log('no files currently uploaded');
+  } else {
+    var image = document.createElement('img');
+    //image.type = 'image';
+    image.id = "imageUpload";
+    image.src = window.URL.createObjectURL(current[0]);
+    image.alt = 'image display';
+    image.width = "300";
+    image.height = "150";
+
+    var tweetForm = document.querySelector("#tweetform");
+
+    tweetForm.appendChild(image);
+
+    console.log('image uploaded');
+  }
+};
+
 var TweetForm = function TweetForm(props) {
   return React.createElement(
     "div",
-    null,
+    { id: "tweetFormDiv" },
     React.createElement(
       "form",
       { id: "tweetForm",
@@ -57,14 +104,11 @@ var TweetForm = function TweetForm(props) {
         name: "tweetForm",
         action: "/maker",
         method: "POST",
-        className: "tweetForm"
+        className: "tweetForm",
+        enctype: "multipart/form-data"
       },
-      React.createElement(
-        "label",
-        { htmlFor: "message" },
-        "Tweet:"
-      ),
       React.createElement("input", { id: "tweetMessage", type: "text", name: "message", placeholder: "What's happening?" }),
+      React.createElement("input", { type: "file", id: "file", name: "file", accept: "image/jpeg, image/jpg, image/png", multiple: true, onChange: updateImageDisplay }),
       React.createElement("input", { type: "hidden", name: "_csrf", value: props.csrf }),
       React.createElement("input", { className: "makeTweetSubmit", type: "submit", value: "Tweet" })
     )
@@ -91,32 +135,46 @@ var MakeChangeForm = function MakeChangeForm(props) {
 var renderChangeForm = function renderChangeForm(e, csrf, tweetId, message) {
   e.preventDefault();
 
-  ReactDOM.render(React.createElement(MakeChangeForm, { csrf: csrf, tweetId: tweetId, message: message }), document.getElementById(tweetId));
+  var chngId = "chng" + tweetId;
+
+  ReactDOM.render(React.createElement(MakeChangeForm, { csrf: csrf, tweetId: tweetId, message: message }), document.getElementById(chngId));
+};
+
+var removeDeleteOpts = function removeDeleteOpts(delDivId) {
+  var delDiv = document.getElementById(delDivId);
+  delDiv.parentNode.removeChild(delDiv);
 };
 
 var MakeDeleteOptions = function MakeDeleteOptions(props) {
+  var delDivId = "delDiv" + props.tweetId;
   return React.createElement(
-    "form",
-    { id: "deleteTweetForm",
-      onSubmit: handleDelete,
-      name: "deleteTweetForm",
-      action: "/delete",
-      method: "POST",
-      className: "deleteForm"
-    },
-    React.createElement("input", { type: "hidden", name: "_id", value: props.tweetId }),
-    React.createElement("input", { type: "hidden", name: "_csrf", value: props.csrf }),
-    React.createElement("input", { className: "deleteTweetSubmit", type: "submit", value: "Yes" }),
-    React.createElement("input", { className: "deleteTweetSubmit", type: "submit", value: "No" })
+    "div",
+    { id: delDivId },
+    React.createElement(
+      "button",
+      { onClick: function onClick(e) {
+          return handleDelete(e, props.csrf, props.tweetId);
+        } },
+      "Yes"
+    ),
+    React.createElement(
+      "button",
+      { onClick: function onClick(e) {
+          return removeDeleteOpts(delDivId);
+        } },
+      "No"
+    )
   );
 };
 
 var renderDeleteOptions = function renderDeleteOptions(csrf, tweetId) {
-  ReactDOM.render(React.createElement(MakeDeleteOptions, { csrf: csrf, tweetId: tweetId }), document.querySelector("#deleteOpts"));
+  var id = "del" + tweetId;
+  ReactDOM.render(React.createElement(MakeDeleteOptions, { csrf: csrf, tweetId: tweetId }), document.getElementById(id));
 };
 
 var TweetList = function TweetList(props) {
   var csrf = props.csrf;
+
   if (props.tweets.length === 0) {
     return React.createElement(
       "div",
@@ -129,6 +187,20 @@ var TweetList = function TweetList(props) {
     );
   }
   var tweetNodes = props.tweets.map(function (tweet) {
+    var delId = "del" + tweet._id;
+    var chngId = "chng" + tweet._id;
+    var obj = void 0;
+    var imgSrc = void 0;
+
+    if (tweet.imgData) {
+      //console.log(tweet.imgData);
+      obj = JSON.parse(tweet.imgData);
+
+      imgSrc = "data:image/png;base64," + obj;
+
+      //console.log(imgSrc);
+    }
+    console.log(imgSrc);
     return React.createElement(
       "div",
       { key: tweet._id, className: "tweet" },
@@ -136,28 +208,34 @@ var TweetList = function TweetList(props) {
         "h4",
         { className: "tweetDisplayName" },
         tweet.displayname,
-        ":"
+        " | ",
+        tweet.createdDate
       ),
       React.createElement(
         "p",
-        { className: "tweetMessage", id: tweet._id },
+        { className: "tweetMessage", id: chngId },
         tweet.message
       ),
-      React.createElement(
-        "button",
-        { className: "changeTweet", onClick: function onClick(e) {
-            return renderChangeForm(e, csrf, tweet._id, tweet.message);
-          } },
-        "Change Tweet"
+      obj != null && React.createElement("img", { src: imgSrc, width: "300", height: "150", alt: "image here" }),
+      props.displayname == tweet.displayname && React.createElement(
+        "div",
+        null,
+        React.createElement(
+          "button",
+          { className: "changeTweet", onClick: function onClick(e) {
+              return renderChangeForm(e, csrf, tweet._id, tweet.message);
+            } },
+          "Edit Tweet"
+        ),
+        React.createElement(
+          "button",
+          { className: "deleteTweet", onClick: function onClick(e) {
+              return renderDeleteOptions(csrf, tweet._id);
+            } },
+          "Delete Tweet"
+        )
       ),
-      React.createElement(
-        "button",
-        { className: "deleteTweet", onClick: function onClick(e) {
-            return renderDeleteOptions(csrf, tweet._id);
-          } },
-        "Delete Tweet"
-      ),
-      React.createElement("div", { id: "deleteOpts" })
+      React.createElement("div", { id: delId })
     );
   });
 
@@ -170,7 +248,7 @@ var TweetList = function TweetList(props) {
 
 var loadTweetsFromServer = function loadTweetsFromServer(csrf) {
   sendAjax('GET', '/getTweets', null, function (data) {
-    ReactDOM.render(React.createElement(TweetList, { csrf: csrf, tweets: data.tweets }), document.querySelector("#tweets"));
+    ReactDOM.render(React.createElement(TweetList, { csrf: csrf, displayname: data.displayname, tweets: data.tweets }), document.querySelector("#tweets"));
   });
 };
 

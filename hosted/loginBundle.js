@@ -43,11 +43,16 @@ var LoginWindow = function LoginWindow(props) {
       className: "mainForm"
     },
     React.createElement(
+      "h1",
+      null,
+      "Tweeter"
+    ),
+    React.createElement(
       "label",
       { htmlFor: "username" },
       "Username: "
     ),
-    React.createElement("input", { id: "user", type: "text", name: "username", placeholder: "username" }),
+    React.createElement("input", { className: "username", type: "text", name: "username", placeholder: "username" }),
     React.createElement(
       "label",
       { htmlFor: "pass" },
@@ -70,11 +75,16 @@ var SignupWindow = function SignupWindow(props) {
       className: "mainForm"
     },
     React.createElement(
+      "h1",
+      null,
+      "Tweeter"
+    ),
+    React.createElement(
       "label",
       { htmlFor: "username" },
       "Username: "
     ),
-    React.createElement("input", { id: "username", type: "text", name: "username", placeholder: "username" }),
+    React.createElement("input", { className: "username", type: "text", name: "username", placeholder: "username" }),
     React.createElement(
       "label",
       { htmlFor: "displayname" },

@@ -39,8 +39,9 @@ const LoginWindow = (props) => {
       method="POST"
       className="mainForm"
     >
+    <h1>Tweeter</h1>
     <label htmlFor="username">Username: </label>
-    <input id="user" type="text" name="username" placeholder="username"/>
+    <input className="username" type="text" name="username" placeholder="username"/>
     <label htmlFor="pass">Password: </label>
     <input id="password" type="password" name="pass" placeholder="password"/>
     <input type="hidden" name="_csrf" value={props.csrf}/>
@@ -58,8 +59,9 @@ const SignupWindow = (props) => {
       method="POST"
       className="mainForm"
     >
+      <h1>Tweeter</h1>
       <label htmlFor="username">Username: </label>
-      <input id="username" type="text" name="username" placeholder="username" />
+      <input className="username" type="text" name="username" placeholder="username" />
       <label htmlFor="displayname">Display Name: </label>
       <input id="displayname" type="text" name="displayname" placeholder="display name"/>
       <label htmlFor="pass">Password: </label>

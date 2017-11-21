@@ -26,7 +26,12 @@ const TweetSchema = new mongoose.Schema({
     ref: 'Account',
   },
 
-  createdData: {
+  imgData: {
+    type: String,
+    contentType: 'image/png',
+  },
+
+  createdDate: {
     type: Date,
     default: Date.now,
   },
@@ -35,6 +40,10 @@ const TweetSchema = new mongoose.Schema({
 TweetSchema.statics.toAPI = (doc) => ({
   message: doc.message,
 });
+
+TweetSchema.statics.findAll = (callback) => {
+  TweetModel.find({}).select('displayname message createdDate imgData').exec(callback);
+};
 
 // ownerId only displays the tweets from that owner
 // we want to display all the tweets from db
@@ -47,8 +56,9 @@ TweetSchema.statics.findByOwner = (ownerId, callback) => {
 };
 
 // pass in the tweet's unique id
-TweetSchema.statics.findById = (id, callback) => {
+TweetSchema.statics.findById = (ownerId, id, callback) => {
   const search = {
+    owner: convertId(ownerId),
     _id: id,
   };
 
