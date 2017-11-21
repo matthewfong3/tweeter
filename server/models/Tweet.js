@@ -5,9 +5,9 @@ const _ = require('underscore');
 let TweetModel = {};
 
 const convertId = mongoose.Types.ObjectId;
-const setName = (name) => _.escape(name).trim();
+//const setName = (name) => _.escape(name).trim();
 
-console.log(setName);
+//console.log(setName);
 
 const TweetSchema = new mongoose.Schema({
   message: {
