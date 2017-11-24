@@ -1,13 +1,11 @@
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
-//const _ = require('underscore');
+// const _ = require('underscore');
 
 let TweetModel = {};
 
 const convertId = mongoose.Types.ObjectId;
-//const setName = (name) => _.escape(name).trim();
-
-//console.log(setName);
+// const setName = (name) => _.escape(name).trim();
 
 const TweetSchema = new mongoose.Schema({
   message: {

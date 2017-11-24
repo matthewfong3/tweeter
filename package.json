@@ -21,6 +21,7 @@
   "author": "Matthew Fong",
   "license": "ISC",
   "dependencies": {
+    "atob": "^2.0.3",
     "body-parser": "^1.15.0",
     "compression": "^1.6.1",
     "connect-redis": "^3.0.2",

@@ -45,6 +45,7 @@ app.disable('x-powered-by');
 app.use(compression());
 app.use(bodyParser.urlencoded({
   extended: true,
+  limit: '5mb',
 }));
 app.use(session({
   key: 'sessionid',

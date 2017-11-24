@@ -79,6 +79,48 @@ const signup = (request, response) => {
   });
 };
 
+const changePassword = (req, res) => {
+  if (!req.body.oldPass || !req.body.newPass1 || !req.body.newPass2) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  if (req.body.newPass1 !== req.body.newPass2) {
+    return res.status(400).json({ error: 'New password does not match' });
+  }
+
+  const password = `${req.body.oldPass}`;
+
+  return Account.AccountModel.findById(req.session.account._id, password, (err, doc) => {
+    if (err) {
+      console.log(err);
+      return res.status(400).json({ error: 'An error occurred' });
+    }
+
+    // console.log(doc.password);
+
+    if (!err && !doc) {
+      return res.status(400).json({ error: 'old password does not match' });
+    }
+
+    return Account.AccountModel.generateHash(req.body.newPass1, (salt, hash) => {
+      const changedDoc = doc;
+      changedDoc.password = hash;
+      changedDoc.salt = salt;
+
+      const accountPromise = doc.save();
+
+      accountPromise.then(() => res.json({ redirect: '/maker' }));
+
+      accountPromise.catch((error) => {
+        console.log(error);
+        return res.status(400).json({ error });
+      });
+
+      return accountPromise;
+    });
+  });
+};
+
 const getToken = (request, response) => {
   const req = request;
   const res = response;
@@ -94,4 +136,5 @@ module.exports.loginPage = loginPage;
 module.exports.login = login;
 module.exports.logout = logout;
 module.exports.signup = signup;
+module.exports.change = changePassword;
 module.exports.getToken = getToken;

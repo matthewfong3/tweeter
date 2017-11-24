@@ -13,13 +13,10 @@ var handleTweet = function handleTweet(e) {
   var imgElem = document.getElementById('imageUpload');
 
   if (imgElem) {
-    var imgData = JSON.stringify(getBase64Image(imgElem));
-
-    //console.log("imgData: " + imgData);
+    var imgData = getBase64Image(imgElem);
+    test1 = imgData;
     queryString += "&imgData=" + imgData;
   }
-
-  //console.log(queryString);
 
   sendAjax('POST', $("#tweetForm").attr("action"), queryString, function () {
     sendAjax('GET', '/getToken', null, function (result) {
@@ -27,9 +24,16 @@ var handleTweet = function handleTweet(e) {
     });
   });
 
+  var image = document.querySelector("#imageUpload");
+  if (image) image.parentNode.removeChild(image);
+
+  var tweetMsg = document.querySelector("#tweetMessage");
+  tweetMsg.placeholder = "What's happening?";
+  tweetMsg.value = '';
+
   return false;
 };
-
+var test1 = void 0;
 var handleChange = function handleChange(e) {
   e.preventDefault();
 
@@ -44,7 +48,26 @@ var handleChange = function handleChange(e) {
     });
   });
 
+  var optDivId = "optDiv" + $("#changeTweetForm").attr('data-ref');
+  var optDiv = document.getElementById(optDivId);
+  if (optDiv) optDiv.parentNode.removeChild(optDiv);
+
+  displayOptions = false;
+
   return false;
+};
+
+var handlePassword = function handlePassword(e) {
+  e.preventDefault();
+
+  if ($("#oldPass").val() == '' || $("#newPass1").val() == '' || $("#newPass2").val() == '') {
+    handleError("All fields are required");
+    return false;
+  }
+
+  console.log($("#passwordForm").serialize());
+
+  sendAjax('POST', $("#passwordForm").attr("action"), $("#passwordForm").serialize(), redirect);
 };
 
 var handleDelete = function handleDelete(e, csrf, tweetId) {
@@ -58,24 +81,35 @@ var handleDelete = function handleDelete(e, csrf, tweetId) {
     });
   });
 
+  displayOptions = false;
+
   return false;
 };
 
+// reference: https://stackoverflow.com/questions/21926893/sending-an-image-and-json-data-to-server-using-ajax-post-request
 var getBase64Image = function getBase64Image(imgElem) {
   var canvas = document.createElement('canvas');
   canvas.width = imgElem.clientWidth;
   canvas.height = imgElem.clientHeight;
   var ctx = canvas.getContext('2d');
-  ctx.drawImage(imgElem, 0, 0);
+  ctx.drawImage(imgElem, 0, 0, canvas.width, canvas.height);
   var dataURL = canvas.toDataURL('image/png');
-  return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+  //let myImage = document.createElement('img');
+  //myImage.id = "hello";
+  //myImage.src = dataURL;
+  //myImage.width = "300";
+  //myImage.height = "150";
+  //document.body.appendChild(myImage);
+
+  return dataURL;
+  //return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
 };
 
 var updateImageDisplay = function updateImageDisplay() {
   var current = $("#file")[0].files;
 
   if (current.length === 0) {
-    console.log('no files currently uploaded');
+    //console.log('no files currently uploaded');
   } else {
     var image = document.createElement('img');
     //image.type = 'image';
@@ -89,8 +123,54 @@ var updateImageDisplay = function updateImageDisplay() {
 
     tweetForm.appendChild(image);
 
-    console.log('image uploaded');
+    //console.log('image uploaded');
   }
+};
+
+var ChangePasswordWindow = function ChangePasswordWindow(props) {
+  return React.createElement(
+    "div",
+    { id: "passwordDiv" },
+    React.createElement(
+      "form",
+      { id: "passwordForm",
+        name: "passwordForm",
+        onSubmit: handlePassword,
+        action: "/passChange",
+        method: "POST",
+        className: "mainForm"
+      },
+      React.createElement(
+        "h1",
+        null,
+        "Tweeter"
+      ),
+      React.createElement(
+        "label",
+        { htmlFor: "oldPass" },
+        "Old password: "
+      ),
+      React.createElement("input", { id: "oldPass", type: "password", name: "oldPass" }),
+      React.createElement(
+        "label",
+        { htmlFor: "newPass1" },
+        "New password:"
+      ),
+      React.createElement("input", { id: "newPass1", type: "password", name: "newPass1" }),
+      React.createElement(
+        "label",
+        { htmlFor: "newPass2" },
+        "Retype password:"
+      ),
+      React.createElement("input", { id: "newPass2", type: "password", name: "newPass2" }),
+      React.createElement("input", { type: "hidden", name: "_csrf", value: props.csrf }),
+      React.createElement("input", { className: "formSubmit", type: "submit", value: "Submit" })
+    )
+  );
+};
+
+var createPasswordWindow = function createPasswordWindow(csrf) {
+  ReactDOM.render(React.createElement(ChangePasswordWindow, { csrf: csrf }), document.querySelector("#appContent"));
 };
 
 var TweetForm = function TweetForm(props) {
@@ -123,7 +203,8 @@ var MakeChangeForm = function MakeChangeForm(props) {
       name: "changeTweetForm",
       action: "/change",
       method: "POST",
-      className: "changeForm"
+      className: "changeForm",
+      "data-ref": props.tweetId
     },
     React.createElement("input", { id: "changeTweetMessage", type: "text", name: "message", placeholder: props.message }),
     React.createElement("input", { type: "hidden", name: "_id", value: props.tweetId }),
@@ -132,37 +213,42 @@ var MakeChangeForm = function MakeChangeForm(props) {
   );
 };
 
-var renderChangeForm = function renderChangeForm(e, csrf, tweetId, message) {
-  e.preventDefault();
-
+var renderChangeForm = function renderChangeForm(csrf, tweetId, message) {
   var chngId = "chng" + tweetId;
 
   ReactDOM.render(React.createElement(MakeChangeForm, { csrf: csrf, tweetId: tweetId, message: message }), document.getElementById(chngId));
 };
 
-var removeDeleteOpts = function removeDeleteOpts(delDivId) {
+var removeDeleteOpts = function removeDeleteOpts(id) {
+  var delDivId = "delDiv" + id;
   var delDiv = document.getElementById(delDivId);
   delDiv.parentNode.removeChild(delDiv);
+
+  var optDivId = "optDiv" + id;
+  var optDiv = document.getElementById(optDivId);
+  optDiv.parentNode.removeChild(optDiv);
+
+  displayOptions = false;
 };
 
 var MakeDeleteOptions = function MakeDeleteOptions(props) {
   var delDivId = "delDiv" + props.tweetId;
   return React.createElement(
     "div",
-    { id: delDivId },
+    { id: delDivId, className: "delDiv" },
     React.createElement(
-      "button",
-      { onClick: function onClick(e) {
+      "div",
+      { className: "delYes", onClick: function onClick(e) {
           return handleDelete(e, props.csrf, props.tweetId);
         } },
-      "Yes"
+      "Delete"
     ),
     React.createElement(
-      "button",
-      { onClick: function onClick(e) {
-          return removeDeleteOpts(delDivId);
+      "div",
+      { className: "delNo", onClick: function onClick(e) {
+          return removeDeleteOpts(props.tweetId);
         } },
-      "No"
+      "Cancel"
     )
   );
 };
@@ -170,6 +256,45 @@ var MakeDeleteOptions = function MakeDeleteOptions(props) {
 var renderDeleteOptions = function renderDeleteOptions(csrf, tweetId) {
   var id = "del" + tweetId;
   ReactDOM.render(React.createElement(MakeDeleteOptions, { csrf: csrf, tweetId: tweetId }), document.getElementById(id));
+};
+var displayOptions = false; // no GLOBALS
+var MakeOptions = function MakeOptions(props) {
+  if (displayOptions) {
+    var optDivId = "optDiv" + props.tweetId;
+    return React.createElement(
+      "div",
+      { id: optDivId, className: "optDiv" },
+      React.createElement(
+        "div",
+        { className: "changeTweet", onClick: function onClick() {
+            return renderChangeForm(props.csrf, props.tweetId, props.tweetMessage);
+          } },
+        "Edit Tweet"
+      ),
+      React.createElement("hr", null),
+      React.createElement(
+        "div",
+        { className: "deleteTweet", onClick: function onClick() {
+            return renderDeleteOptions(props.csrf, props.tweetId);
+          } },
+        "Delete Tweet"
+      )
+    );
+  } else {
+    var delDivId = "delDiv" + props.tweetId;
+    var delDiv = document.getElementById(delDivId);
+    if (delDiv) delDiv.parentNode.removeChild(delDiv);
+
+    //let chngForm = document.getElementById('changeTweetForm');
+    //if(chngForm) chngForm.parentNode.removeChild(chngForm);
+    return React.createElement("div", null);
+  }
+};
+
+var renderOptions = function renderOptions(csrf, tweetId, tweetMessage) {
+  displayOptions = !displayOptions;
+  var id = "opt" + tweetId;
+  ReactDOM.render(React.createElement(MakeOptions, { csrf: csrf, tweetId: tweetId, tweetMessage: tweetMessage }), document.getElementById(id));
 };
 
 var TweetList = function TweetList(props) {
@@ -189,21 +314,27 @@ var TweetList = function TweetList(props) {
   var tweetNodes = props.tweets.map(function (tweet) {
     var delId = "del" + tweet._id;
     var chngId = "chng" + tweet._id;
-    var obj = void 0;
+    var optId = "opt" + tweet._id;
+    var parsedData = void 0;
     var imgSrc = void 0;
 
     if (tweet.imgData) {
-      //console.log(tweet.imgData);
-      obj = JSON.parse(tweet.imgData);
+      console.log(tweet.imgData);
+      parsedData = tweet.imgData + "==";
+      imgSrc = parsedData;
 
-      imgSrc = "data:image/png;base64," + obj;
-
-      //console.log(imgSrc);
+      if (test1 == imgSrc) console.log(true);else console.log(false);
     }
-    console.log(imgSrc);
+    //console.dir(imgSrc);
+
     return React.createElement(
       "div",
       { key: tweet._id, className: "tweet" },
+      props.displayname == tweet.displayname && React.createElement("img", { className: "dropDownIcon", src: "/assets/img/dropdown.png", width: "25", height: "25", alt: "dropdown icon", onClick: function onClick() {
+          return renderOptions(csrf, tweet._id, tweet.message);
+        } }),
+      React.createElement("div", { id: optId }),
+      React.createElement("div", { id: delId }),
       React.createElement(
         "h4",
         { className: "tweetDisplayName" },
@@ -216,26 +347,7 @@ var TweetList = function TweetList(props) {
         { className: "tweetMessage", id: chngId },
         tweet.message
       ),
-      obj != null && React.createElement("img", { src: imgSrc, width: "300", height: "150", alt: "image here" }),
-      props.displayname == tweet.displayname && React.createElement(
-        "div",
-        null,
-        React.createElement(
-          "button",
-          { className: "changeTweet", onClick: function onClick(e) {
-              return renderChangeForm(e, csrf, tweet._id, tweet.message);
-            } },
-          "Edit Tweet"
-        ),
-        React.createElement(
-          "button",
-          { className: "deleteTweet", onClick: function onClick(e) {
-              return renderDeleteOptions(csrf, tweet._id);
-            } },
-          "Delete Tweet"
-        )
-      ),
-      React.createElement("div", { id: delId })
+      parsedData != null && React.createElement("img", { src: imgSrc, width: "300", height: "150", alt: "image here" })
     );
   });
 
@@ -253,6 +365,14 @@ var loadTweetsFromServer = function loadTweetsFromServer(csrf) {
 };
 
 var setup = function setup(csrf) {
+  var changePasswordButton = document.querySelector("#changePassButton");
+
+  changePasswordButton.addEventListener("click", function (e) {
+    e.preventDefault();
+    createPasswordWindow(csrf);
+    return false;
+  });
+
   ReactDOM.render(React.createElement(TweetForm, { csrf: csrf }), document.querySelector("#makeTweet"));
 
   ReactDOM.render(React.createElement(TweetList, { tweets: [], csrf: csrf }), document.querySelector("#tweets"));

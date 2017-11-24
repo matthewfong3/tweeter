@@ -1,6 +1,17 @@
+const atob = require('atob');
 const models = require('../models');
-
 const Tweet = models.Tweet;
+
+// HELPER FUNCTION
+// reference: https://stackoverflow.com/questions/21797299/convert-base64-string-to-arraybuffer
+const base64ToBufferArray = (base64) => {
+  const binaryString = atob(base64);
+  const length = binaryString.length;
+  const bytes = new Uint8Array(length);
+  for (let i = 0; i < length; i++) { bytes[i] = binaryString.charCodeAt(i); }
+
+  return bytes.buffer;
+};
 
 const makerPage = (req, res) => {
   Tweet.TweetModel.findByOwner(req.session.account._id, (err, docs) => {
@@ -25,12 +36,11 @@ const makeTweet = (req, res) => {
   };
 
   if (req.body.imgData) {
-    // let buffer = new Buffer(req.body.imgData, 'base64');
-    // console.log(buffer);
-    tweetData.imgData = req.body.imgData;
+    // tweetData.imgData = base64ToBufferArray(req.body.imgData);
+    const temp = base64ToBufferArray(req.body.imgData);
+    console.dir(temp.toString('utf-8'));
+    tweetData.imgData = temp.toString('utf-8');
   }
-
-  // console.log(tweetData);
 
   const newTweet = new Tweet.TweetModel(tweetData);
 

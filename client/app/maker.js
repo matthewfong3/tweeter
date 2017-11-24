@@ -1,3 +1,4 @@
+
 const handleTweet = (e) => {
   e.preventDefault();
   
@@ -11,13 +12,11 @@ const handleTweet = (e) => {
   let imgElem = document.getElementById('imageUpload');
   
   if(imgElem){
-    let imgData = JSON.stringify(getBase64Image(imgElem));
-  
-    //console.log("imgData: " + imgData);
+    let imgData = getBase64Image(imgElem);
+    test1 = imgData;
     queryString += "&imgData=" + imgData;
   }
   
-  //console.log(queryString);
   
   sendAjax('POST', $("#tweetForm").attr("action"), queryString, () => {
     sendAjax('GET', '/getToken', null, (result) => {
@@ -25,9 +24,16 @@ const handleTweet = (e) => {
     });
   });
   
+  let image = document.querySelector("#imageUpload");
+  if(image) image.parentNode.removeChild(image);
+  
+  let tweetMsg = document.querySelector("#tweetMessage");
+  tweetMsg.placeholder = "What's happening?";
+  tweetMsg.value = '';
+  
   return false;
 };
-
+let test1;
 const handleChange = (e) => {
   e.preventDefault();
   
@@ -42,7 +48,26 @@ const handleChange = (e) => {
     });
   });
   
+  let optDivId = "optDiv" + $("#changeTweetForm").attr('data-ref');
+  let optDiv = document.getElementById(optDivId);
+  if(optDiv) optDiv.parentNode.removeChild(optDiv);
+  
+  displayOptions = false;
+  
   return false;
+};
+
+const handlePassword = (e) => {
+  e.preventDefault();
+  
+  if($("#oldPass").val() == '' || $("#newPass1").val() == '' || $("#newPass2").val() == ''){
+    handleError("All fields are required");
+    return false;
+  }
+  
+  console.log($("#passwordForm").serialize());
+  
+  sendAjax('POST', $("#passwordForm").attr("action"), $("#passwordForm").serialize(), redirect);
 };
 
 const handleDelete = (e, csrf, tweetId) => {
@@ -56,24 +81,35 @@ const handleDelete = (e, csrf, tweetId) => {
     });
   });
   
+  displayOptions = false;
+  
   return false;
 };
 
+// reference: https://stackoverflow.com/questions/21926893/sending-an-image-and-json-data-to-server-using-ajax-post-request
 const getBase64Image = (imgElem) => {
   let canvas = document.createElement('canvas');
   canvas.width = imgElem.clientWidth;
   canvas.height = imgElem.clientHeight;
   let ctx = canvas.getContext('2d');
-  ctx.drawImage(imgElem, 0, 0);
+  ctx.drawImage(imgElem, 0, 0, canvas.width, canvas.height);
   let dataURL = canvas.toDataURL('image/png');
-  return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+  //let myImage = document.createElement('img');
+  //myImage.id = "hello";
+  //myImage.src = dataURL;
+  //myImage.width = "300";
+  //myImage.height = "150";
+  //document.body.appendChild(myImage);
+  
+  return dataURL;
+  //return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
 };
 
 const updateImageDisplay = () => {
   let current = $("#file")[0].files;
   
   if(current.length === 0){
-    console.log('no files currently uploaded');
+    //console.log('no files currently uploaded');
   } else {
     let image = document.createElement('img');
     //image.type = 'image';
@@ -87,8 +123,38 @@ const updateImageDisplay = () => {
     
     tweetForm.appendChild(image);
     
-    console.log('image uploaded');
+    //console.log('image uploaded');
   }
+};
+
+const ChangePasswordWindow = (props) => {
+  return(
+    <div id="passwordDiv">
+      <form id="passwordForm"
+        name="passwordForm"
+        onSubmit={handlePassword}
+        action="/passChange"
+        method="POST"
+        className="mainForm"
+      >
+        <h1>Tweeter</h1>
+        <label htmlFor="oldPass">Old password: </label>
+        <input id="oldPass" type="password" name="oldPass"></input>
+        <label htmlFor="newPass1">New password:</label>
+        <input id="newPass1" type="password" name="newPass1"></input>
+        <label htmlFor="newPass2">Retype password:</label>
+        <input id="newPass2" type="password" name="newPass2"/>
+        <input type="hidden" name="_csrf" value={props.csrf}/>
+        <input className="formSubmit" type="submit" value="Submit"/>
+      </form>
+    </div>
+  );
+};
+
+const createPasswordWindow = (csrf) => {
+  ReactDOM.render(
+    <ChangePasswordWindow csrf={csrf} />, document.querySelector("#appContent")
+  );
 };
 
 const TweetForm = (props) => {
@@ -119,6 +185,7 @@ const MakeChangeForm = (props) => {
       action="/change"
       method="POST"
       className="changeForm"
+      data-ref={props.tweetId}
     >
       <input id="changeTweetMessage" type="text" name="message" placeholder={props.message}/>
       <input type="hidden" name="_id" value={props.tweetId}/>
@@ -128,9 +195,7 @@ const MakeChangeForm = (props) => {
   );
 };
 
-const renderChangeForm = (e, csrf, tweetId, message) => {
-  e.preventDefault();
-  
+const renderChangeForm = (csrf, tweetId, message) => {
   let chngId = "chng" + tweetId;
    
   ReactDOM.render(
@@ -138,17 +203,24 @@ const renderChangeForm = (e, csrf, tweetId, message) => {
   );
 };
 
-const removeDeleteOpts = (delDivId) => {
+const removeDeleteOpts = (id) => {
+  let delDivId = "delDiv" + id;
   let delDiv = document.getElementById(delDivId);
   delDiv.parentNode.removeChild(delDiv);
+  
+  let optDivId = "optDiv" + id;
+  let optDiv = document.getElementById(optDivId);
+  optDiv.parentNode.removeChild(optDiv);
+  
+  displayOptions = false;
 };
 
 const MakeDeleteOptions = (props) => {
   let delDivId = "delDiv" + props.tweetId;
   return(
-    <div id={delDivId}>
-      <button onClick={ (e) => handleDelete(e, props.csrf, props.tweetId)}>Yes</button>
-      <button onClick={(e) => removeDeleteOpts(delDivId)}>No</button>
+    <div id={delDivId} className="delDiv">
+      <div className="delYes" onClick={ (e) => handleDelete(e, props.csrf, props.tweetId)}>Delete</div>
+      <div className="delNo" onClick={(e) => removeDeleteOpts(props.tweetId)}>Cancel</div>
     </div>
   );
 }
@@ -157,6 +229,35 @@ const renderDeleteOptions = (csrf, tweetId) => {
   let id = "del" + tweetId;
   ReactDOM.render(
     <MakeDeleteOptions csrf={csrf} tweetId={tweetId}/>, document.getElementById(id)
+  );
+};
+let displayOptions = false; // no GLOBALS
+const MakeOptions = (props) => {
+  if(displayOptions){
+  let optDivId = "optDiv" + props.tweetId;
+  return(
+    <div id={optDivId} className="optDiv">
+      <div className="changeTweet" onClick={() => renderChangeForm(props.csrf, props.tweetId, props.tweetMessage)}>Edit Tweet</div>
+      <hr/>
+      <div className="deleteTweet" onClick={() => renderDeleteOptions(props.csrf, props.tweetId)}>Delete Tweet</div>
+    </div>
+  );
+  } else {
+    let delDivId = "delDiv" + props.tweetId;
+    let delDiv = document.getElementById(delDivId);
+    if(delDiv) delDiv.parentNode.removeChild(delDiv);
+    
+    //let chngForm = document.getElementById('changeTweetForm');
+    //if(chngForm) chngForm.parentNode.removeChild(chngForm);
+    return(<div></div>);
+  }
+};
+
+const renderOptions = (csrf, tweetId, tweetMessage) => {
+  displayOptions = !displayOptions;
+  let id = "opt" + tweetId;
+  ReactDOM.render(
+    <MakeOptions csrf={csrf} tweetId={tweetId} tweetMessage={tweetMessage}/>, document.getElementById(id)
   );
 };
 
@@ -173,30 +274,34 @@ const TweetList = (props) => {
   const tweetNodes = props.tweets.map((tweet) => {
     let delId = "del" + tweet._id;
     let chngId = "chng" + tweet._id;
-    let obj;
+    let optId = "opt" + tweet._id;
+    let parsedData;
     let imgSrc;
     
     if(tweet.imgData){
-      //console.log(tweet.imgData);
-      obj = JSON.parse(tweet.imgData);
-    
-      imgSrc = "data:image/png;base64," + obj;
-    
-      //console.log(imgSrc);
+      console.log(tweet.imgData);
+      parsedData = tweet.imgData + "==";
+      imgSrc = parsedData;
+      
+      if(test1 == imgSrc)
+        console.log(true);
+      else
+        console.log(false);
     }
-    console.log(imgSrc);
+    //console.dir(imgSrc);
+    
     return(
       <div key={tweet._id} className="tweet" >
+        {props.displayname == tweet.displayname &&
+          <img className="dropDownIcon" src="/assets/img/dropdown.png" width="25" height="25" alt="dropdown icon" onClick={() => renderOptions(csrf, tweet._id, tweet.message)}/>
+        }
+        <div id={optId}></div>
+        <div id={delId}></div>
         <h4 className="tweetDisplayName">{tweet.displayname} | {tweet.createdDate}</h4>
         <p className="tweetMessage" id={chngId}>{tweet.message}</p>
-        {obj != null &&
+        {parsedData != null &&
           <img src={imgSrc} width="300" height="150" alt="image here"/>
         }
-        {props.displayname == tweet.displayname && <div>
-          <button className="changeTweet" onClick={ (e) => renderChangeForm(e, csrf, tweet._id, tweet.message)}>Edit Tweet</button>
-          <button className="deleteTweet" onClick={ (e) => renderDeleteOptions(csrf, tweet._id)}>Delete Tweet</button>
-        </div>}
-        <div id={delId}></div>
       </div>
     );
   });
@@ -217,6 +322,14 @@ const loadTweetsFromServer = (csrf) => {
 };
 
 const setup = function(csrf){
+  const changePasswordButton = document.querySelector("#changePassButton");
+  
+  changePasswordButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    createPasswordWindow(csrf);
+    return false;
+  });
+  
   ReactDOM.render(
     <TweetForm csrf={csrf} />, document.querySelector("#makeTweet")
   );

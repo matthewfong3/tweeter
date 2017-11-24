@@ -58,7 +58,7 @@ var LoginWindow = function LoginWindow(props) {
       { htmlFor: "pass" },
       "Password: "
     ),
-    React.createElement("input", { id: "password", type: "password", name: "pass", placeholder: "password" }),
+    React.createElement("input", { id: "password", type: "password", name: "password", placeholder: "password" }),
     React.createElement("input", { type: "hidden", name: "_csrf", value: props.csrf }),
     React.createElement("input", { className: "formSubmit", type: "submit", value: "Sign in" })
   );
@@ -96,13 +96,13 @@ var SignupWindow = function SignupWindow(props) {
       { htmlFor: "pass" },
       "Password: "
     ),
-    React.createElement("input", { id: "password", type: "password", name: "pass", placeholder: "password" }),
+    React.createElement("input", { id: "password", type: "password", name: "password", placeholder: "password" }),
     React.createElement(
       "label",
       { htmlFor: "pass2" },
       "Retype Password: "
     ),
-    React.createElement("input", { id: "password2", type: "password", name: "pass2", placeholder: "retype password" }),
+    React.createElement("input", { id: "password2", type: "password", name: "password2", placeholder: "retype password" }),
     React.createElement("input", { type: "hidden", name: "_csrf", value: props.csrf }),
     React.createElement("input", { className: "formSubmit", type: "submit", value: "Sign Up" })
   );
