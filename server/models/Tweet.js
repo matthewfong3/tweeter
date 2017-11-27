@@ -25,8 +25,7 @@ const TweetSchema = new mongoose.Schema({
   },
 
   imgData: {
-    type: String,
-    contentType: 'image/png',
+    type: Buffer,
   },
 
   createdDate: {

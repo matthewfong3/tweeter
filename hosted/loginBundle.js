@@ -150,6 +150,22 @@ var handleError = function handleError(message) {
   $("#errorMessage").text(message);
 };
 
+var NotFound = function NotFound(props) {
+  return React.createElement(
+    "div",
+    null,
+    React.createElement(
+      "p",
+      null,
+      "props.message"
+    )
+  );
+};
+
+var createNotFoundPage = function createNotFoundPage(message) {
+  ReactDOM.render(React.createElement(NotFound, { message: message }), document.querySelector("#content"));
+};
+
 var redirect = function redirect(response) {
   window.location = response.redirect;
 };
@@ -164,6 +180,7 @@ var sendAjax = function sendAjax(type, action, data, success) {
     success: success,
     error: function error(xhr, status, _error) {
       var messageObj = JSON.parse(xhr.responseText);
+      console.log(messageObj);
       handleError(messageObj.error);
     }
   });

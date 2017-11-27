@@ -1,5 +1,8 @@
 "use strict";
 
+var displayOptions = false; // no GLOBALS
+var test1 = void 0;
+
 var handleTweet = function handleTweet(e) {
   e.preventDefault();
 
@@ -15,6 +18,16 @@ var handleTweet = function handleTweet(e) {
   if (imgElem) {
     var imgData = getBase64Image(imgElem);
     test1 = imgData;
+    console.log(test1.replace(/\s/g, '').length);
+    //test1 = base64ToBufferArray(imgData);
+    //console.dir(test1);
+    //test1 = arrayBufferToBase64(test1);
+    //console.log(test1);
+    //let testImg = document.createElement('img');
+    //testImg.src = 'data:image/png;base64,' + test1;
+    //console.log(testImg.src);
+    //test1 = testImg.src;
+    //document.body.appendChild(testImg);
     queryString += "&imgData=" + imgData;
   }
 
@@ -33,7 +46,7 @@ var handleTweet = function handleTweet(e) {
 
   return false;
 };
-var test1 = void 0;
+
 var handleChange = function handleChange(e) {
   e.preventDefault();
 
@@ -86,6 +99,7 @@ var handleDelete = function handleDelete(e, csrf, tweetId) {
   return false;
 };
 
+// HELPER FUNCTIONS
 // reference: https://stackoverflow.com/questions/21926893/sending-an-image-and-json-data-to-server-using-ajax-post-request
 var getBase64Image = function getBase64Image(imgElem) {
   var canvas = document.createElement('canvas');
@@ -94,15 +108,39 @@ var getBase64Image = function getBase64Image(imgElem) {
   var ctx = canvas.getContext('2d');
   ctx.drawImage(imgElem, 0, 0, canvas.width, canvas.height);
   var dataURL = canvas.toDataURL('image/png');
-  //let myImage = document.createElement('img');
-  //myImage.id = "hello";
-  //myImage.src = dataURL;
-  //myImage.width = "300";
-  //myImage.height = "150";
-  //document.body.appendChild(myImage);
 
-  return dataURL;
-  //return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+  //return dataURL;
+  return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+};
+
+var base64ToBufferArray = function base64ToBufferArray(base64) {
+  var binaryString = window.atob(base64);
+  var length = binaryString.length;
+  var bytes = new Uint8Array(length);
+  for (var i = 0; i < length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  return bytes.buffer;
+};
+
+// reference: https://stackoverflow.com/questions/8609289/convert-a-binary-nodejs-buffer-to-javascript-arraybuffer
+var toArrayBuffer = function toArrayBuffer(buf) {
+  var ab = new ArrayBuffer(buf.length);
+  var view = new Uint8Array(ab);
+  for (var i = 0; i < buf.length; i++) {
+    view[i] = buf[i];
+  }return ab;
+};
+
+// reference: https://stackoverflow.com/questions/9267899/arraybuffer-to-base64-encoded-string
+var arrayBufferToBase64 = function arrayBufferToBase64(buffer) {
+  var binary = '';
+  var bytes = new Uint8Array(buffer);
+  var length = bytes.byteLength;
+  for (var i = 0; i < length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }return window.btoa(binary);
 };
 
 var updateImageDisplay = function updateImageDisplay() {
@@ -122,7 +160,6 @@ var updateImageDisplay = function updateImageDisplay() {
     var tweetForm = document.querySelector("#tweetform");
 
     tweetForm.appendChild(image);
-
     //console.log('image uploaded');
   }
 };
@@ -257,7 +294,7 @@ var renderDeleteOptions = function renderDeleteOptions(csrf, tweetId) {
   var id = "del" + tweetId;
   ReactDOM.render(React.createElement(MakeDeleteOptions, { csrf: csrf, tweetId: tweetId }), document.getElementById(id));
 };
-var displayOptions = false; // no GLOBALS
+
 var MakeOptions = function MakeOptions(props) {
   if (displayOptions) {
     var optDivId = "optDiv" + props.tweetId;
@@ -311,21 +348,37 @@ var TweetList = function TweetList(props) {
       )
     );
   }
+
+  //props.testing = props.testing.replace(/\s/g,'');
+  console.log(props.testing.length);
+  if (props.testing === test1) {
+    console.log('base64 string length are the same');
+  } else {
+    console.log('base64 string length are NOT the same');
+  }
+
   var tweetNodes = props.tweets.map(function (tweet) {
     var delId = "del" + tweet._id;
     var chngId = "chng" + tweet._id;
     var optId = "opt" + tweet._id;
-    var parsedData = void 0;
+    var arrBuf = void 0;
     var imgSrc = void 0;
 
     if (tweet.imgData) {
-      console.log(tweet.imgData);
-      parsedData = tweet.imgData + "==";
-      imgSrc = parsedData;
+      //console.dir(tweet.imgData);
+      arrBuf = toArrayBuffer(tweet.imgData.data);
+      //console.dir(arrBuf);
+      //console.dir(arrayBufferToBase64(arrBuf));
+      imgSrc = 'data:image/png;base64,' + arrayBufferToBase64(arrBuf).replace(/\s+/g, '');
 
-      if (test1 == imgSrc) console.log(true);else console.log(false);
+      //imgSrc = arrayBufferToBase64(arrBuf);
+      //console.dir(test1.length);
+      console.dir(imgSrc);
+      //if(test1 === imgSrc)
+      //  console.log(true);
+      //else
+      //  console.log(false);
     }
-    //console.dir(imgSrc);
 
     return React.createElement(
       "div",
@@ -347,7 +400,7 @@ var TweetList = function TweetList(props) {
         { className: "tweetMessage", id: chngId },
         tweet.message
       ),
-      parsedData != null && React.createElement("img", { src: imgSrc, width: "300", height: "150", alt: "image here" })
+      arrBuf != null && React.createElement("img", { src: imgSrc, width: "300", height: "150", alt: "image here" })
     );
   });
 
@@ -360,7 +413,7 @@ var TweetList = function TweetList(props) {
 
 var loadTweetsFromServer = function loadTweetsFromServer(csrf) {
   sendAjax('GET', '/getTweets', null, function (data) {
-    ReactDOM.render(React.createElement(TweetList, { csrf: csrf, displayname: data.displayname, tweets: data.tweets }), document.querySelector("#tweets"));
+    ReactDOM.render(React.createElement(TweetList, { csrf: csrf, displayname: data.displayname, tweets: data.tweets, testing: data.testing }), document.querySelector("#tweets"));
   });
 };
 
@@ -395,6 +448,22 @@ var handleError = function handleError(message) {
   $("#errorMessage").text(message);
 };
 
+var NotFound = function NotFound(props) {
+  return React.createElement(
+    "div",
+    null,
+    React.createElement(
+      "p",
+      null,
+      "props.message"
+    )
+  );
+};
+
+var createNotFoundPage = function createNotFoundPage(message) {
+  ReactDOM.render(React.createElement(NotFound, { message: message }), document.querySelector("#content"));
+};
+
 var redirect = function redirect(response) {
   window.location = response.redirect;
 };
@@ -409,6 +478,7 @@ var sendAjax = function sendAjax(type, action, data, success) {
     success: success,
     error: function error(xhr, status, _error) {
       var messageObj = JSON.parse(xhr.responseText);
+      console.log(messageObj);
       handleError(messageObj.error);
     }
   });

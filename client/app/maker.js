@@ -1,3 +1,5 @@
+let displayOptions = false; // no GLOBALS
+let test1;
 
 const handleTweet = (e) => {
   e.preventDefault();
@@ -14,6 +16,16 @@ const handleTweet = (e) => {
   if(imgElem){
     let imgData = getBase64Image(imgElem);
     test1 = imgData;
+    console.log(test1.replace(/\s/g,'').length);
+    //test1 = base64ToBufferArray(imgData);
+    //console.dir(test1);
+    //test1 = arrayBufferToBase64(test1);
+    //console.log(test1);
+    //let testImg = document.createElement('img');
+    //testImg.src = 'data:image/png;base64,' + test1;
+    //console.log(testImg.src);
+    //test1 = testImg.src;
+    //document.body.appendChild(testImg);
     queryString += "&imgData=" + imgData;
   }
   
@@ -33,7 +45,7 @@ const handleTweet = (e) => {
   
   return false;
 };
-let test1;
+
 const handleChange = (e) => {
   e.preventDefault();
   
@@ -86,6 +98,7 @@ const handleDelete = (e, csrf, tweetId) => {
   return false;
 };
 
+// HELPER FUNCTIONS
 // reference: https://stackoverflow.com/questions/21926893/sending-an-image-and-json-data-to-server-using-ajax-post-request
 const getBase64Image = (imgElem) => {
   let canvas = document.createElement('canvas');
@@ -94,15 +107,37 @@ const getBase64Image = (imgElem) => {
   let ctx = canvas.getContext('2d');
   ctx.drawImage(imgElem, 0, 0, canvas.width, canvas.height);
   let dataURL = canvas.toDataURL('image/png');
-  //let myImage = document.createElement('img');
-  //myImage.id = "hello";
-  //myImage.src = dataURL;
-  //myImage.width = "300";
-  //myImage.height = "150";
-  //document.body.appendChild(myImage);
   
-  return dataURL;
-  //return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+  //return dataURL;
+  return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+};
+
+const base64ToBufferArray = (base64) => {
+  const binaryString = window.atob(base64);
+  const length = binaryString.length;
+  const bytes = new Uint8Array(length);
+  for (let i = 0; i < length; i++) { bytes[i] = binaryString.charCodeAt(i); }
+
+  return bytes.buffer;
+};
+
+// reference: https://stackoverflow.com/questions/8609289/convert-a-binary-nodejs-buffer-to-javascript-arraybuffer
+const toArrayBuffer = (buf) => {
+  let ab = new ArrayBuffer(buf.length);
+  let view = new Uint8Array(ab);
+  for(let i = 0; i < buf.length; i++)
+    view[i] = buf[i];
+  return ab;
+};
+
+// reference: https://stackoverflow.com/questions/9267899/arraybuffer-to-base64-encoded-string
+const arrayBufferToBase64 = (buffer) => {
+  let binary = '';
+  let bytes = new Uint8Array(buffer);
+  let length = bytes.byteLength;
+  for(let i = 0; i < length; i++)
+    binary += String.fromCharCode(bytes[i]);
+  return window.btoa(binary);
 };
 
 const updateImageDisplay = () => {
@@ -122,7 +157,6 @@ const updateImageDisplay = () => {
     let tweetForm = document.querySelector("#tweetform");
     
     tweetForm.appendChild(image);
-    
     //console.log('image uploaded');
   }
 };
@@ -231,7 +265,7 @@ const renderDeleteOptions = (csrf, tweetId) => {
     <MakeDeleteOptions csrf={csrf} tweetId={tweetId}/>, document.getElementById(id)
   );
 };
-let displayOptions = false; // no GLOBALS
+
 const MakeOptions = (props) => {
   if(displayOptions){
   let optDivId = "optDiv" + props.tweetId;
@@ -271,24 +305,37 @@ const TweetList = (props) => {
       </div>
     );
   }
+  
+  //props.testing = props.testing.replace(/\s/g,'');
+  console.log(props.testing.length);
+  if(props.testing === test1){
+    console.log('base64 string length are the same');
+  } else {
+    console.log('base64 string length are NOT the same');
+  }
+  
   const tweetNodes = props.tweets.map((tweet) => {
     let delId = "del" + tweet._id;
     let chngId = "chng" + tweet._id;
     let optId = "opt" + tweet._id;
-    let parsedData;
+    let arrBuf;
     let imgSrc;
     
     if(tweet.imgData){
-      console.log(tweet.imgData);
-      parsedData = tweet.imgData + "==";
-      imgSrc = parsedData;
-      
-      if(test1 == imgSrc)
-        console.log(true);
-      else
-        console.log(false);
+      //console.dir(tweet.imgData);
+      arrBuf = toArrayBuffer(tweet.imgData.data);
+      //console.dir(arrBuf);
+      //console.dir(arrayBufferToBase64(arrBuf));
+      imgSrc = 'data:image/png;base64,' + arrayBufferToBase64(arrBuf).replace(/\s+/g, '');
+    
+      //imgSrc = arrayBufferToBase64(arrBuf);
+      //console.dir(test1.length);
+      console.dir(imgSrc);
+      //if(test1 === imgSrc)
+      //  console.log(true);
+      //else
+      //  console.log(false);
     }
-    //console.dir(imgSrc);
     
     return(
       <div key={tweet._id} className="tweet" >
@@ -299,7 +346,7 @@ const TweetList = (props) => {
         <div id={delId}></div>
         <h4 className="tweetDisplayName">{tweet.displayname} | {tweet.createdDate}</h4>
         <p className="tweetMessage" id={chngId}>{tweet.message}</p>
-        {parsedData != null &&
+        {arrBuf != null &&
           <img src={imgSrc} width="300" height="150" alt="image here"/>
         }
       </div>
@@ -316,7 +363,7 @@ const TweetList = (props) => {
 const loadTweetsFromServer = (csrf) => {
   sendAjax('GET', '/getTweets', null, (data) => {
     ReactDOM.render(
-      <TweetList csrf={csrf} displayname={data.displayname} tweets={data.tweets}/>, document.querySelector("#tweets")
+      <TweetList csrf={csrf} displayname={data.displayname} tweets={data.tweets} testing={data.testing}/>, document.querySelector("#tweets")
     );
   });
 };

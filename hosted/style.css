@@ -204,16 +204,6 @@ hr {
   width: 95px;
 }
 
-/*.delYes, .delNo {
-  color: white;
-  text-decoration: none;
-  background-color: #55acee;
-  width: 50px;
-  position: relative;
-  float: right;
-  top: 66px;
-}*/
-
 .delYes {
   border-radius: 5px 0px 0px 5px;
   border-right: 1px solid #ddd;
@@ -229,4 +219,8 @@ hr {
   width: 49%;
   padding-top: 3px;
   padding-bottom: 3px;
+}
+
+#ErrMessage {
+  text-align: center;
 }

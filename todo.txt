@@ -2,5 +2,6 @@
 image data
 dark theme
 -button -> dropdown to edit/delete tweet
+404 not found page
 
 ~change tweet form to show unchanged tweet if user does not change tweet after all

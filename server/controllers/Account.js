@@ -121,6 +121,10 @@ const changePassword = (req, res) => {
   });
 };
 
+const notFound = (req, res) => {
+  return res.status(404).json({error: 'IT DOTH NOT EXIST'});
+};
+
 const getToken = (request, response) => {
   const req = request;
   const res = response;
@@ -138,3 +142,4 @@ module.exports.logout = logout;
 module.exports.signup = signup;
 module.exports.change = changePassword;
 module.exports.getToken = getToken;
+module.exports.notFound = notFound;

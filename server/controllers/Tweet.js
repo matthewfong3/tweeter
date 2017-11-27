@@ -2,6 +2,8 @@ const atob = require('atob');
 const models = require('../models');
 const Tweet = models.Tweet;
 
+let testing = '';
+
 // HELPER FUNCTION
 // reference: https://stackoverflow.com/questions/21797299/convert-base64-string-to-arraybuffer
 const base64ToBufferArray = (base64) => {
@@ -11,6 +13,14 @@ const base64ToBufferArray = (base64) => {
   for (let i = 0; i < length; i++) { bytes[i] = binaryString.charCodeAt(i); }
 
   return bytes.buffer;
+};
+
+// reference: https://stackoverflow.com/questions/8609289/convert-a-binary-nodejs-buffer-to-javascript-arraybuffer
+const toBuffer = (ab) => {
+  const buf = new Buffer(ab.byteLength);
+  const view = new Uint8Array(ab);
+  for (let i = 0; i < buf.length; i++) { buf[i] = view[i]; }
+  return buf;
 };
 
 const makerPage = (req, res) => {
@@ -36,10 +46,13 @@ const makeTweet = (req, res) => {
   };
 
   if (req.body.imgData) {
-    // tweetData.imgData = base64ToBufferArray(req.body.imgData);
-    const temp = base64ToBufferArray(req.body.imgData);
-    console.dir(temp.toString('utf-8'));
-    tweetData.imgData = temp.toString('utf-8');
+    testing = req.body.imgData.replace(/\s+/g, '');
+    console.dir(testing.length);
+    const bufArr = base64ToBufferArray(req.body.imgData);
+    // console.dir(bufArr);
+    // tweetData.imgData = bufArr;
+    tweetData.imgData = toBuffer(bufArr);
+    // console.log(tweetData.imgData);
   }
 
   const newTweet = new Tweet.TweetModel(tweetData);
@@ -66,7 +79,7 @@ const getTweets = (request, response) => {
       return res.status(400).json({ error: 'An error occurred' });
     }
 
-    return res.json({ displayname: req.session.account.displayname, tweets: docs });
+    return res.json({ displayname: req.session.account.displayname, tweets: docs, testing });
   });
 };
 

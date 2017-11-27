@@ -15,6 +15,7 @@ const router = (app) => {
   app.post('/change', mid.requiresLogin, controllers.Tweet.change);
   app.post('/delete', mid.requiresLogin, controllers.Tweet.delete);
   app.get('/', mid.requiresSecure, mid.requiresLogout, controllers.Account.loginPage);
+  app.get('/*', controllers.Account.notFound);
 };
 
 module.exports = router;
