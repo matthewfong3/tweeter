@@ -127,6 +127,10 @@ nav {
   margin-top: 10px;
 }
 
+#uploadImage {
+  margin-bottom: 7px;
+}
+
 .emptyTweet {
   text-align: center;
 }
@@ -165,6 +169,10 @@ nav {
 #tweetMessage {
   border-radius: 4px;
   padding: 5px;
+}
+
+.tweetImg {
+  margin-bottom: 10px;
 }
 
 .dropDownIcon {
@@ -223,4 +231,36 @@ hr {
 
 #ErrMessage {
   text-align: center;
+}
+
+.replyButton {
+  margin-right: 5px;
+}
+
+.replyButton, .favButton {
+  vertical-align: middle;
+}
+
+.replies {
+  margin-top: 10px;
+}
+
+.replyDiv {
+  border-radius: 5px;
+  background-color: rgb(217, 235, 253);
+  margin-top: 4px;
+  padding: 7px;
+}
+
+.replyDiv p {
+  margin-bottom: 0;
+}
+
+.replyDiv h3 {
+  text-align: center;
+  margin: 0 auto;
+}
+
+.viewReplies {
+  float:right;
 }

@@ -46,6 +46,11 @@ const signup = (request, response) => {
   if (!req.body.username || !req.body.displayname || !req.body.password || !req.body.password2) {
     return res.status(400).json({ error: 'All fields are required' });
   }
+  
+  // source: https://stackoverflow.com/questions/13840143/jquery-check-if-special-characters-exists-in-string
+  if(/^[a-zA-Z0-9- ]*$/.test(req.body.username) === false || /^[a-zA-Z0-9- ]*$/.test(req.body.displayname) === false) {
+    return res.status(400).json({ error: 'Username cannot contain special characters' });
+  } 
 
   if (req.body.password !== req.body.password2) {
     return res.status(400).json({ error: 'Passwords do not match' });
@@ -121,9 +126,7 @@ const changePassword = (req, res) => {
   });
 };
 
-const notFound = (req, res) => {
-  return res.status(404).json({error: 'IT DOTH NOT EXIST'});
-};
+const notFound = (req, res) => res.status(404).json({ error: 'IT DOTH NOT EXIST' });
 
 const getToken = (request, response) => {
   const req = request;

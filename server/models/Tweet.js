@@ -25,7 +25,15 @@ const TweetSchema = new mongoose.Schema({
   },
 
   imgData: {
-    type: Buffer,
+    type: String,
+  },
+
+  favorites: {
+    type: Number,
+  },
+
+  comments: {
+    type: Array,
   },
 
   createdDate: {
@@ -39,7 +47,8 @@ TweetSchema.statics.toAPI = (doc) => ({
 });
 
 TweetSchema.statics.findAll = (callback) => {
-  TweetModel.find({}).select('displayname message createdDate imgData').exec(callback);
+  TweetModel.find({})
+    .select('displayname message createdDate imgData favorites comments').exec(callback);
 };
 
 // ownerId only displays the tweets from that owner
@@ -56,6 +65,14 @@ TweetSchema.statics.findByOwner = (ownerId, callback) => {
 TweetSchema.statics.findById = (ownerId, id, callback) => {
   const search = {
     owner: convertId(ownerId),
+    _id: id,
+  };
+
+  return TweetModel.findOne(search, callback);
+};
+
+TweetSchema.statics.findByIdForAll = (id, callback) => {
+  const search = {
     _id: id,
   };
 

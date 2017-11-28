@@ -1,7 +1,6 @@
 "use strict";
 
 var displayOptions = false; // no GLOBALS
-var test1 = void 0;
 
 var handleTweet = function handleTweet(e) {
   e.preventDefault();
@@ -11,35 +10,17 @@ var handleTweet = function handleTweet(e) {
     return false;
   }
 
-  var queryString = $("#tweetForm").serialize();
-
-  var imgElem = document.getElementById('imageUpload');
-
-  if (imgElem) {
-    var imgData = getBase64Image(imgElem);
-    test1 = imgData;
-    console.log(test1.replace(/\s/g, '').length);
-    //test1 = base64ToBufferArray(imgData);
-    //console.dir(test1);
-    //test1 = arrayBufferToBase64(test1);
-    //console.log(test1);
-    //let testImg = document.createElement('img');
-    //testImg.src = 'data:image/png;base64,' + test1;
-    //console.log(testImg.src);
-    //test1 = testImg.src;
-    //document.body.appendChild(testImg);
-    queryString += "&imgData=" + imgData;
-  }
-
-  sendAjax('POST', $("#tweetForm").attr("action"), queryString, function () {
+  sendAjax('POST', $("#tweetForm").attr("action"), $("#tweetForm").serialize(), function () {
     sendAjax('GET', '/getToken', null, function (result) {
       loadTweetsFromServer(result.csrfToken);
     });
   });
 
-  var image = document.querySelector("#imageUpload");
-  if (image) image.parentNode.removeChild(image);
+  // remove image input field
+  var imageInput = document.querySelector("#imageInput");
+  if (imageInput) imageInput.parentNode.removeChild(imageInput);
 
+  // change tweet placeholder text back
   var tweetMsg = document.querySelector("#tweetMessage");
   tweetMsg.placeholder = "What's happening?";
   tweetMsg.value = '';
@@ -68,6 +49,24 @@ var handleChange = function handleChange(e) {
   displayOptions = false;
 
   return false;
+};
+
+var handleReply = function handleReply(e) {
+  e.preventDefault();
+
+  if ($("#replyMessage").val() == '') {
+    handleError("Message is required");
+    return false;
+  }
+
+  sendAjax('POST', $("#replyTweetForm").attr("action"), $("#replyTweetForm").serialize(), function () {
+    sendAjax('GET', '/getToken', null, function (result) {
+      loadTweetsFromServer(result.csrfToken);
+    });
+  });
+
+  var replyForm = document.querySelector("#replyTweetForm");
+  replyForm.parentNode.removeChild(replyForm);
 };
 
 var handlePassword = function handlePassword(e) {
@@ -99,68 +98,34 @@ var handleDelete = function handleDelete(e, csrf, tweetId) {
   return false;
 };
 
-// HELPER FUNCTIONS
-// reference: https://stackoverflow.com/questions/21926893/sending-an-image-and-json-data-to-server-using-ajax-post-request
-var getBase64Image = function getBase64Image(imgElem) {
-  var canvas = document.createElement('canvas');
-  canvas.width = imgElem.clientWidth;
-  canvas.height = imgElem.clientHeight;
-  var ctx = canvas.getContext('2d');
-  ctx.drawImage(imgElem, 0, 0, canvas.width, canvas.height);
-  var dataURL = canvas.toDataURL('image/png');
+var handleFav = function handleFav(csrf, tweetId) {
+  var favId = 'fav' + tweetId;
+  var favButton = document.getElementById(favId);
+  favButton.src = '/assets/img/heart-fill.png';
 
-  //return dataURL;
-  return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
-};
+  var queryString = "_csrf=" + csrf + "&id=" + tweetId;
 
-var base64ToBufferArray = function base64ToBufferArray(base64) {
-  var binaryString = window.atob(base64);
-  var length = binaryString.length;
-  var bytes = new Uint8Array(length);
-  for (var i = 0; i < length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
+  if (favButton.dataset.faved === "false") {
+    sendAjax('POST', '/favTweet', queryString, function () {
+      sendAjax('GET', '/getToken', null, function (result) {
+        loadTweetsFromServer(result.csrfToken);
+      });
+    });
   }
-
-  return bytes.buffer;
+  favButton.dataset.faved = "true";
 };
 
-// reference: https://stackoverflow.com/questions/8609289/convert-a-binary-nodejs-buffer-to-javascript-arraybuffer
-var toArrayBuffer = function toArrayBuffer(buf) {
-  var ab = new ArrayBuffer(buf.length);
-  var view = new Uint8Array(ab);
-  for (var i = 0; i < buf.length; i++) {
-    view[i] = buf[i];
-  }return ab;
-};
+// function that creates image input in tweet form
+var createImageInput = function createImageInput() {
+  var imageField = document.querySelector('#imageField');
+  if (imageField.childNodes.length === 0) {
+    var input = document.createElement('input');
+    input.id = "imageInput";
+    input.type = "text";
+    input.name = "imgData";
+    input.placeholder = "Image link";
 
-// reference: https://stackoverflow.com/questions/9267899/arraybuffer-to-base64-encoded-string
-var arrayBufferToBase64 = function arrayBufferToBase64(buffer) {
-  var binary = '';
-  var bytes = new Uint8Array(buffer);
-  var length = bytes.byteLength;
-  for (var i = 0; i < length; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }return window.btoa(binary);
-};
-
-var updateImageDisplay = function updateImageDisplay() {
-  var current = $("#file")[0].files;
-
-  if (current.length === 0) {
-    //console.log('no files currently uploaded');
-  } else {
-    var image = document.createElement('img');
-    //image.type = 'image';
-    image.id = "imageUpload";
-    image.src = window.URL.createObjectURL(current[0]);
-    image.alt = 'image display';
-    image.width = "300";
-    image.height = "150";
-
-    var tweetForm = document.querySelector("#tweetform");
-
-    tweetForm.appendChild(image);
-    //console.log('image uploaded');
+    imageField.appendChild(input);
   }
 };
 
@@ -225,10 +190,11 @@ var TweetForm = function TweetForm(props) {
         enctype: "multipart/form-data"
       },
       React.createElement("input", { id: "tweetMessage", type: "text", name: "message", placeholder: "What's happening?" }),
-      React.createElement("input", { type: "file", id: "file", name: "file", accept: "image/jpeg, image/jpg, image/png", multiple: true, onChange: updateImageDisplay }),
       React.createElement("input", { type: "hidden", name: "_csrf", value: props.csrf }),
-      React.createElement("input", { className: "makeTweetSubmit", type: "submit", value: "Tweet" })
-    )
+      React.createElement("input", { className: "makeTweetSubmit", type: "submit", value: "Tweet" }),
+      React.createElement("div", { id: "imageField" })
+    ),
+    React.createElement("img", { id: "uploadImage", src: "/assets/img/upload.png", width: "25", height: "25", alt: "upload image", onClick: createImageInput })
   );
 };
 
@@ -322,8 +288,6 @@ var MakeOptions = function MakeOptions(props) {
     var delDiv = document.getElementById(delDivId);
     if (delDiv) delDiv.parentNode.removeChild(delDiv);
 
-    //let chngForm = document.getElementById('changeTweetForm');
-    //if(chngForm) chngForm.parentNode.removeChild(chngForm);
     return React.createElement("div", null);
   }
 };
@@ -332,6 +296,72 @@ var renderOptions = function renderOptions(csrf, tweetId, tweetMessage) {
   displayOptions = !displayOptions;
   var id = "opt" + tweetId;
   ReactDOM.render(React.createElement(MakeOptions, { csrf: csrf, tweetId: tweetId, tweetMessage: tweetMessage }), document.getElementById(id));
+};
+
+var MakeReplyForm = function MakeReplyForm(props) {
+  return React.createElement(
+    "form",
+    { id: "replyTweetForm",
+      onSubmit: handleReply,
+      name: "replyTweetForm",
+      action: "/reply",
+      method: "POST",
+      className: "replyForm",
+      "data-ref": props.tweetId
+    },
+    React.createElement("input", { id: "replyMessage", type: "text", name: "message", placeholder: "Reply here" }),
+    React.createElement("input", { type: "hidden", name: "_id", value: props.tweetId }),
+    React.createElement("input", { type: "hidden", name: "_csrf", value: props.csrf }),
+    React.createElement("input", { className: "replyTweetSubmit", type: "submit", value: "Reply" })
+  );
+};
+
+var renderReplyDiv = function renderReplyDiv(csrf, tweetId, replyDivId) {
+  ReactDOM.render(React.createElement(MakeReplyForm, { csrf: csrf, tweetId: tweetId }), document.getElementById(replyDivId));
+};
+
+var MakeReplies = function MakeReplies(props) {
+  if (props.comments.length === 0) {
+    return React.createElement(
+      "div",
+      { className: "replyDiv" },
+      React.createElement(
+        "h3",
+        null,
+        "No replies"
+      )
+    );
+  }
+
+  var replies = props.comments.map(function (comment) {
+    // source: https://stackoverflow.com/questions/10272773/split-string-on-the-first-white-space-occurrence
+    return React.createElement(
+      "div",
+      { className: "replyDiv" },
+      React.createElement(
+        "h4",
+        null,
+        comment.substr(0, comment.indexOf(';'))
+      ),
+      React.createElement(
+        "p",
+        null,
+        comment.substr(comment.indexOf(';') + 1)
+      )
+    );
+  });
+
+  return React.createElement(
+    "div",
+    null,
+    replies
+  );
+};
+
+var renderReplies = function renderReplies(e, repliesId, comments) {
+  e.preventDefault();
+  var id = repliesId;
+  ReactDOM.render(React.createElement(MakeReplies, { comments: comments }), document.getElementById(id));
 };
 
 var TweetList = function TweetList(props) {
@@ -349,37 +379,22 @@ var TweetList = function TweetList(props) {
     );
   }
 
-  //props.testing = props.testing.replace(/\s/g,'');
-  console.log(props.testing.length);
-  if (props.testing === test1) {
-    console.log('base64 string length are the same');
-  } else {
-    console.log('base64 string length are NOT the same');
-  }
-
   var tweetNodes = props.tweets.map(function (tweet) {
     var delId = "del" + tweet._id;
     var chngId = "chng" + tweet._id;
     var optId = "opt" + tweet._id;
-    var arrBuf = void 0;
+    var favId = "fav" + tweet._id;
+    var replyId = "reply" + tweet._id;
+    var replyDivId = "replyDiv" + tweet._id;
+    var repliesId = "replies" + tweet._id;
+
     var imgSrc = void 0;
 
     if (tweet.imgData) {
-      //console.dir(tweet.imgData);
-      arrBuf = toArrayBuffer(tweet.imgData.data);
-      //console.dir(arrBuf);
-      //console.dir(arrayBufferToBase64(arrBuf));
-      imgSrc = 'data:image/png;base64,' + arrayBufferToBase64(arrBuf).replace(/\s+/g, '');
-
-      //imgSrc = arrayBufferToBase64(arrBuf);
-      //console.dir(test1.length);
-      console.dir(imgSrc);
-      //if(test1 === imgSrc)
-      //  console.log(true);
-      //else
-      //  console.log(false);
+      imgSrc = tweet.imgData;
     }
 
+    var comments = tweet.comments;
     return React.createElement(
       "div",
       { key: tweet._id, className: "tweet" },
@@ -400,7 +415,33 @@ var TweetList = function TweetList(props) {
         { className: "tweetMessage", id: chngId },
         tweet.message
       ),
-      arrBuf != null && React.createElement("img", { src: imgSrc, width: "300", height: "150", alt: "image here" })
+      imgSrc != null && React.createElement("img", { className: "tweetImg", src: imgSrc, width: "300", height: "150", alt: "image here" }),
+      React.createElement(
+        "div",
+        null,
+        React.createElement("img", { id: replyId, className: "replyButton", src: "/assets/img/reply.png", width: "17", height: "17", alt: "reply button", onClick: function onClick() {
+            return renderReplyDiv(csrf, tweet._id, replyDivId);
+          } }),
+        React.createElement("img", { id: favId, className: "favButton", src: "/assets/img/heart.png", width: "17", height: "17", alt: "favorite tweet", "data-faved": "false", onClick: function onClick() {
+            return handleFav(csrf, tweet._id);
+          } }),
+        tweet.favorites > 0 && React.createElement(
+          "span",
+          null,
+          " ",
+          tweet.favorites,
+          " "
+        ),
+        React.createElement(
+          "a",
+          { href: "#", className: "viewReplies", onClick: function onClick(e) {
+              return renderReplies(e, repliesId, comments);
+            } },
+          "Show replies"
+        )
+      ),
+      React.createElement("div", { id: replyDivId }),
+      React.createElement("div", { id: repliesId, className: "replies" })
     );
   });
 
@@ -413,7 +454,7 @@ var TweetList = function TweetList(props) {
 
 var loadTweetsFromServer = function loadTweetsFromServer(csrf) {
   sendAjax('GET', '/getTweets', null, function (data) {
-    ReactDOM.render(React.createElement(TweetList, { csrf: csrf, displayname: data.displayname, tweets: data.tweets, testing: data.testing }), document.querySelector("#tweets"));
+    ReactDOM.render(React.createElement(TweetList, { csrf: csrf, displayname: data.displayname, tweets: data.tweets }), document.querySelector("#tweets"));
   });
 };
 

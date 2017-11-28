@@ -1,27 +1,5 @@
-const atob = require('atob');
 const models = require('../models');
 const Tweet = models.Tweet;
-
-let testing = '';
-
-// HELPER FUNCTION
-// reference: https://stackoverflow.com/questions/21797299/convert-base64-string-to-arraybuffer
-const base64ToBufferArray = (base64) => {
-  const binaryString = atob(base64);
-  const length = binaryString.length;
-  const bytes = new Uint8Array(length);
-  for (let i = 0; i < length; i++) { bytes[i] = binaryString.charCodeAt(i); }
-
-  return bytes.buffer;
-};
-
-// reference: https://stackoverflow.com/questions/8609289/convert-a-binary-nodejs-buffer-to-javascript-arraybuffer
-const toBuffer = (ab) => {
-  const buf = new Buffer(ab.byteLength);
-  const view = new Uint8Array(ab);
-  for (let i = 0; i < buf.length; i++) { buf[i] = view[i]; }
-  return buf;
-};
 
 const makerPage = (req, res) => {
   Tweet.TweetModel.findByOwner(req.session.account._id, (err, docs) => {
@@ -43,18 +21,14 @@ const makeTweet = (req, res) => {
     message: req.body.message,
     displayname: req.session.account.displayname,
     owner: req.session.account._id,
+    favorites: 0,
+    comments: [],
   };
 
   if (req.body.imgData) {
-    testing = req.body.imgData.replace(/\s+/g, '');
-    console.dir(testing.length);
-    const bufArr = base64ToBufferArray(req.body.imgData);
-    // console.dir(bufArr);
-    // tweetData.imgData = bufArr;
-    tweetData.imgData = toBuffer(bufArr);
-    // console.log(tweetData.imgData);
+    tweetData.imgData = req.body.imgData;
   }
-
+  
   const newTweet = new Tweet.TweetModel(tweetData);
 
   const tweetPromise = newTweet.save();
@@ -79,7 +53,7 @@ const getTweets = (request, response) => {
       return res.status(400).json({ error: 'An error occurred' });
     }
 
-    return res.json({ displayname: req.session.account.displayname, tweets: docs, testing });
+    return res.json({ displayname: req.session.account.displayname, tweets: docs });
   });
 };
 
@@ -111,6 +85,34 @@ const changeTweet = (req, res) => {
   });
 };
 
+const favTweet = (req, res) => {
+  if (!req.body.id) {
+    return res.status(400).json({ error: 'Tweet cannot be found' });
+  }
+
+  return Tweet.TweetModel.findByIdForAll(req.body.id, (err, doc) => {
+    if (err) {
+      console.log(err);
+      return res.status(400).json({ error: 'An error occurred' });
+    }
+
+    if (!doc) return res.status(400).json({ error: 'No tweet found' });
+
+    const changedTweet = doc;
+    changedTweet.favorites++;
+
+    const tweetPromise = doc.save();
+    tweetPromise.then(() => res.json({ redirect: '/maker' }));
+
+    tweetPromise.catch((error) => {
+      console.log(error);
+      return res.status(400).json({ error });
+    });
+
+    return tweetPromise;
+  });
+};
+
 const deleteTweet = (req, res) => {
   if (!req.body._id) {
     return res.status(400).json({ error: 'error occured. missing tweet id' });
@@ -130,8 +132,38 @@ const deleteTweet = (req, res) => {
   });
 };
 
+const replyTweet = (req, res) => {
+  if (!req.body.message) {
+    return res.status(400).json({ error: 'Message is required in reply' });
+  }
+
+  return Tweet.TweetModel.findByIdForAll(req.body._id, (err, doc) => {
+    if (err) {
+      console.log(err);
+      return res.status(400).json({ error: 'An error occurred' });
+    }
+
+    if (!doc) return res.status(400).json({ error: 'No tweet found' });
+
+    const changedTweet = doc;
+    changedTweet.comments.push(req.session.account.displayname + ":;" + req.body.message);
+
+    const tweetPromise = doc.save();
+    tweetPromise.then(() => res.json({ redirect: '/maker' }));
+
+    tweetPromise.catch((error) => {
+      console.log(error);
+      return res.status(400).json({ error });
+    });
+
+    return tweetPromise;
+  });
+};
+
 module.exports.makerPage = makerPage;
 module.exports.getTweets = getTweets;
 module.exports.make = makeTweet;
 module.exports.change = changeTweet;
 module.exports.delete = deleteTweet;
+module.exports.fav = favTweet;
+module.exports.reply = replyTweet;

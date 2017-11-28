@@ -1,5 +1,4 @@
 let displayOptions = false; // no GLOBALS
-let test1;
 
 const handleTweet = (e) => {
   e.preventDefault();
@@ -9,36 +8,17 @@ const handleTweet = (e) => {
     return false;
   }
   
-  let queryString = $("#tweetForm").serialize();
-  
-  let imgElem = document.getElementById('imageUpload');
-  
-  if(imgElem){
-    let imgData = getBase64Image(imgElem);
-    test1 = imgData;
-    console.log(test1.replace(/\s/g,'').length);
-    //test1 = base64ToBufferArray(imgData);
-    //console.dir(test1);
-    //test1 = arrayBufferToBase64(test1);
-    //console.log(test1);
-    //let testImg = document.createElement('img');
-    //testImg.src = 'data:image/png;base64,' + test1;
-    //console.log(testImg.src);
-    //test1 = testImg.src;
-    //document.body.appendChild(testImg);
-    queryString += "&imgData=" + imgData;
-  }
-  
-  
-  sendAjax('POST', $("#tweetForm").attr("action"), queryString, () => {
+  sendAjax('POST', $("#tweetForm").attr("action"), $("#tweetForm").serialize(), () => {
     sendAjax('GET', '/getToken', null, (result) => {
       loadTweetsFromServer(result.csrfToken);
     });
   });
   
-  let image = document.querySelector("#imageUpload");
-  if(image) image.parentNode.removeChild(image);
+  // remove image input field
+  let imageInput = document.querySelector("#imageInput");
+  if(imageInput) imageInput.parentNode.removeChild(imageInput);
   
+  // change tweet placeholder text back
   let tweetMsg = document.querySelector("#tweetMessage");
   tweetMsg.placeholder = "What's happening?";
   tweetMsg.value = '';
@@ -67,6 +47,24 @@ const handleChange = (e) => {
   displayOptions = false;
   
   return false;
+};
+
+const handleReply = (e) => {
+  e.preventDefault();
+  
+  if($("#replyMessage").val() == ''){
+    handleError("Message is required");
+    return false;
+  }
+  
+  sendAjax('POST', $("#replyTweetForm").attr("action"), $("#replyTweetForm").serialize(), () => {
+    sendAjax('GET', '/getToken', null, (result) => {
+      loadTweetsFromServer(result.csrfToken);
+    });
+  });
+  
+  let replyForm = document.querySelector("#replyTweetForm");
+  replyForm.parentNode.removeChild(replyForm);
 };
 
 const handlePassword = (e) => {
@@ -98,66 +96,34 @@ const handleDelete = (e, csrf, tweetId) => {
   return false;
 };
 
-// HELPER FUNCTIONS
-// reference: https://stackoverflow.com/questions/21926893/sending-an-image-and-json-data-to-server-using-ajax-post-request
-const getBase64Image = (imgElem) => {
-  let canvas = document.createElement('canvas');
-  canvas.width = imgElem.clientWidth;
-  canvas.height = imgElem.clientHeight;
-  let ctx = canvas.getContext('2d');
-  ctx.drawImage(imgElem, 0, 0, canvas.width, canvas.height);
-  let dataURL = canvas.toDataURL('image/png');
+const handleFav = (csrf, tweetId) => {  
+  let favId = 'fav' + tweetId;
+  let favButton = document.getElementById(favId);
+  favButton.src = '/assets/img/heart-fill.png';
   
-  //return dataURL;
-  return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+  let queryString = `_csrf=${csrf}&id=${tweetId}`;
+
+  if(favButton.dataset.faved === "false"){
+    sendAjax('POST', '/favTweet', queryString, () => {
+      sendAjax('GET', '/getToken', null, (result) => {
+        loadTweetsFromServer(result.csrfToken);
+      });
+    }); 
+  } 
+  favButton.dataset.faved = "true";
 };
 
-const base64ToBufferArray = (base64) => {
-  const binaryString = window.atob(base64);
-  const length = binaryString.length;
-  const bytes = new Uint8Array(length);
-  for (let i = 0; i < length; i++) { bytes[i] = binaryString.charCodeAt(i); }
-
-  return bytes.buffer;
-};
-
-// reference: https://stackoverflow.com/questions/8609289/convert-a-binary-nodejs-buffer-to-javascript-arraybuffer
-const toArrayBuffer = (buf) => {
-  let ab = new ArrayBuffer(buf.length);
-  let view = new Uint8Array(ab);
-  for(let i = 0; i < buf.length; i++)
-    view[i] = buf[i];
-  return ab;
-};
-
-// reference: https://stackoverflow.com/questions/9267899/arraybuffer-to-base64-encoded-string
-const arrayBufferToBase64 = (buffer) => {
-  let binary = '';
-  let bytes = new Uint8Array(buffer);
-  let length = bytes.byteLength;
-  for(let i = 0; i < length; i++)
-    binary += String.fromCharCode(bytes[i]);
-  return window.btoa(binary);
-};
-
-const updateImageDisplay = () => {
-  let current = $("#file")[0].files;
+// function that creates image input in tweet form
+const createImageInput = () => {
+  let imageField = document.querySelector('#imageField');
+  if(imageField.childNodes.length === 0){
+    let input = document.createElement('input');
+    input.id = "imageInput";
+    input.type = "text";
+    input.name = "imgData";
+    input.placeholder = "Image link";
   
-  if(current.length === 0){
-    //console.log('no files currently uploaded');
-  } else {
-    let image = document.createElement('img');
-    //image.type = 'image';
-    image.id = "imageUpload";
-    image.src = window.URL.createObjectURL(current[0]);
-    image.alt = 'image display';
-    image.width = "300";
-    image.height = "150";
-    
-    let tweetForm = document.querySelector("#tweetform");
-    
-    tweetForm.appendChild(image);
-    //console.log('image uploaded');
+    imageField.appendChild(input); 
   }
 };
 
@@ -203,10 +169,11 @@ const TweetForm = (props) => {
         enctype="multipart/form-data" 
       >
         <input id="tweetMessage" type="text" name="message" placeholder="What's happening?"/>
-        <input type="file" id="file" name="file" accept="image/jpeg, image/jpg, image/png" multiple onChange={updateImageDisplay}/>
         <input type="hidden" name="_csrf" value={props.csrf}/>
         <input className="makeTweetSubmit" type="submit" value="Tweet"/>
+        <div id="imageField"></div>
       </form>
+      <img id="uploadImage" src="/assets/img/upload.png" width="25" height="25" alt="upload image" onClick={createImageInput}/>
     </div>
   );
 };
@@ -281,8 +248,6 @@ const MakeOptions = (props) => {
     let delDiv = document.getElementById(delDivId);
     if(delDiv) delDiv.parentNode.removeChild(delDiv);
     
-    //let chngForm = document.getElementById('changeTweetForm');
-    //if(chngForm) chngForm.parentNode.removeChild(chngForm);
     return(<div></div>);
   }
 };
@@ -292,6 +257,64 @@ const renderOptions = (csrf, tweetId, tweetMessage) => {
   let id = "opt" + tweetId;
   ReactDOM.render(
     <MakeOptions csrf={csrf} tweetId={tweetId} tweetMessage={tweetMessage}/>, document.getElementById(id)
+  );
+};
+
+const MakeReplyForm = (props) => {
+  return(
+    <form id="replyTweetForm"
+      onSubmit={handleReply}
+      name="replyTweetForm"
+      action="/reply"
+      method="POST"
+      className="replyForm"
+      data-ref={props.tweetId}
+    >
+      <input id="replyMessage" type="text" name="message" placeholder="Reply here"/>
+      <input type="hidden" name="_id" value={props.tweetId}/>
+      <input type="hidden" name="_csrf" value={props.csrf}/>
+      <input className="replyTweetSubmit" type="submit" value="Reply"/>
+    </form>
+  );
+};
+
+const renderReplyDiv = (csrf, tweetId, replyDivId) => {
+  ReactDOM.render(
+    <MakeReplyForm csrf={csrf} tweetId={tweetId} />, document.getElementById(replyDivId)
+  );
+};
+
+const MakeReplies = (props) => {
+  if(props.comments.length === 0){
+    return(
+      <div className="replyDiv">
+        <h3>No replies</h3>
+      </div>
+    );
+  }
+  
+  const replies = props.comments.map((comment) => {
+    // source: https://stackoverflow.com/questions/10272773/split-string-on-the-first-white-space-occurrence
+    return(
+      <div className="replyDiv">
+        <h4>{comment.substr(0,comment.indexOf(';'))}</h4>
+        <p>{comment.substr(comment.indexOf(';')+1)}</p>
+      </div>
+    );
+  });
+  
+  return(
+    <div>
+      {replies}
+    </div>
+  );
+};
+
+const renderReplies = (e, repliesId, comments) => { 
+  e.preventDefault();
+  let id = repliesId;
+  ReactDOM.render(
+    <MakeReplies comments={comments}/>, document.getElementById(id)
   );
 };
 
@@ -306,37 +329,22 @@ const TweetList = (props) => {
     );
   }
   
-  //props.testing = props.testing.replace(/\s/g,'');
-  console.log(props.testing.length);
-  if(props.testing === test1){
-    console.log('base64 string length are the same');
-  } else {
-    console.log('base64 string length are NOT the same');
-  }
-  
   const tweetNodes = props.tweets.map((tweet) => {
     let delId = "del" + tweet._id;
     let chngId = "chng" + tweet._id;
     let optId = "opt" + tweet._id;
-    let arrBuf;
+    let favId = "fav" + tweet._id;
+    let replyId = "reply" + tweet._id;
+    let replyDivId = "replyDiv" + tweet._id;
+    let repliesId = "replies" + tweet._id;
+    
     let imgSrc;
     
     if(tweet.imgData){
-      //console.dir(tweet.imgData);
-      arrBuf = toArrayBuffer(tweet.imgData.data);
-      //console.dir(arrBuf);
-      //console.dir(arrayBufferToBase64(arrBuf));
-      imgSrc = 'data:image/png;base64,' + arrayBufferToBase64(arrBuf).replace(/\s+/g, '');
-    
-      //imgSrc = arrayBufferToBase64(arrBuf);
-      //console.dir(test1.length);
-      console.dir(imgSrc);
-      //if(test1 === imgSrc)
-      //  console.log(true);
-      //else
-      //  console.log(false);
+      imgSrc = tweet.imgData;
     }
     
+    let comments = tweet.comments;
     return(
       <div key={tweet._id} className="tweet" >
         {props.displayname == tweet.displayname &&
@@ -346,9 +354,19 @@ const TweetList = (props) => {
         <div id={delId}></div>
         <h4 className="tweetDisplayName">{tweet.displayname} | {tweet.createdDate}</h4>
         <p className="tweetMessage" id={chngId}>{tweet.message}</p>
-        {arrBuf != null &&
-          <img src={imgSrc} width="300" height="150" alt="image here"/>
+        {imgSrc != null &&
+          <img className="tweetImg" src={imgSrc} width="300" height="150" alt="image here"/>
         }
+        <div>
+          <img id={replyId} className="replyButton" src="/assets/img/reply.png" width="17" height="17" alt="reply button" onClick={() => renderReplyDiv(csrf, tweet._id, replyDivId)} />
+          <img id={favId} className="favButton" src="/assets/img/heart.png" width="17" height="17" alt="favorite tweet" data-faved="false" onClick={() => handleFav(csrf, tweet._id)}/>
+          {tweet.favorites > 0 &&
+            <span> {tweet.favorites} </span>
+          }
+          <a href="#" className="viewReplies" onClick={(e) => renderReplies(e, repliesId, comments)}>Show replies</a>
+        </div>
+        <div id={replyDivId}></div>
+        <div id={repliesId} className="replies"></div>
       </div>
     );
   });
@@ -363,7 +381,7 @@ const TweetList = (props) => {
 const loadTweetsFromServer = (csrf) => {
   sendAjax('GET', '/getTweets', null, (data) => {
     ReactDOM.render(
-      <TweetList csrf={csrf} displayname={data.displayname} tweets={data.tweets} testing={data.testing}/>, document.querySelector("#tweets")
+      <TweetList csrf={csrf} displayname={data.displayname} tweets={data.tweets}/>, document.querySelector("#tweets")
     );
   });
 };

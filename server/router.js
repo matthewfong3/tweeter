@@ -10,6 +10,8 @@ const router = (app) => {
   app.get('/logout', mid.requiresLogin, controllers.Account.logout);
   // app.get('/passChange', mid.requiresLogin, controllers.Account.change);
   app.post('/passChange', mid.requiresLogin, controllers.Account.change);
+  app.post('/favTweet', mid.requiresLogin, controllers.Tweet.fav);
+  app.post('/reply', mid.requiresLogin, controllers.Tweet.reply);
   app.get('/maker', mid.requiresLogin, controllers.Tweet.makerPage);
   app.post('/maker', mid.requiresLogin, controllers.Tweet.make);
   app.post('/change', mid.requiresLogin, controllers.Tweet.change);
