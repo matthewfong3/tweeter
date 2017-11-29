@@ -1,5 +1,7 @@
 "use strict";
 
+// - Handling requests to server - region
+// handles user tweet to server
 var handleTweet = function handleTweet(e) {
   e.preventDefault();
 
@@ -14,11 +16,11 @@ var handleTweet = function handleTweet(e) {
     });
   });
 
-  // remove image input field
+  // remove image input field if it exists
   var imageInput = document.querySelector("#imageInput");
   if (imageInput) imageInput.parentNode.removeChild(imageInput);
 
-  // change tweet placeholder text back
+  // change tweet placeholder text back to default
   var tweetMsg = document.querySelector("#tweetMessage");
   tweetMsg.placeholder = "What's happening?";
   tweetMsg.value = '';
@@ -26,6 +28,7 @@ var handleTweet = function handleTweet(e) {
   return false;
 };
 
+// handles user changed tweet to server
 var handleChange = function handleChange(e) {
   e.preventDefault();
 
@@ -40,6 +43,7 @@ var handleChange = function handleChange(e) {
     });
   });
 
+  // remove option div on change tweet submit
   var optDivId = "optDiv" + $("#changeTweetForm").attr('data-ref');
   var optDiv = document.getElementById(optDivId);
   if (optDiv) optDiv.parentNode.removeChild(optDiv);
@@ -47,6 +51,7 @@ var handleChange = function handleChange(e) {
   return false;
 };
 
+// handles user replies to a tweet to server
 var handleReply = function handleReply(e) {
   e.preventDefault();
 
@@ -61,10 +66,12 @@ var handleReply = function handleReply(e) {
     });
   });
 
+  // remove reply form on submit
   var replyForm = document.querySelector("#replyTweetForm");
   replyForm.parentNode.removeChild(replyForm);
 };
 
+// handles password change to server
 var handlePassword = function handlePassword(e) {
   e.preventDefault();
 
@@ -73,11 +80,10 @@ var handlePassword = function handlePassword(e) {
     return false;
   }
 
-  console.log($("#passwordForm").serialize());
-
   sendAjax('POST', $("#passwordForm").attr("action"), $("#passwordForm").serialize(), redirect);
 };
 
+// handles delete a tweet request to server
 var handleDelete = function handleDelete(e, csrf, tweetId) {
   e.preventDefault();
 
@@ -92,7 +98,9 @@ var handleDelete = function handleDelete(e, csrf, tweetId) {
   return false;
 };
 
+// handles favoriting a tweet to server
 var handleFav = function handleFav(csrf, tweetId) {
+  // change heart icon image
   var favId = 'fav' + tweetId;
   var favButton = document.getElementById(favId);
   favButton.src = '/assets/img/heart-fill.png';
@@ -108,6 +116,32 @@ var handleFav = function handleFav(csrf, tweetId) {
   }
   favButton.dataset.faved = "true";
 };
+//endregion
+
+// - Tweet related-functions - region
+// function that creates the tweet form for user
+var TweetForm = function TweetForm(props) {
+  return React.createElement(
+    "div",
+    { id: "tweetFormDiv" },
+    React.createElement(
+      "form",
+      { id: "tweetForm",
+        onSubmit: handleTweet,
+        name: "tweetForm",
+        action: "/maker",
+        method: "POST",
+        className: "tweetForm",
+        enctype: "multipart/form-data"
+      },
+      React.createElement("input", { id: "tweetMessage", type: "text", name: "message", placeholder: "What's happening?" }),
+      React.createElement("input", { type: "hidden", name: "_csrf", value: props.csrf }),
+      React.createElement("input", { className: "makeTweetSubmit", type: "submit", value: "Tweet" }),
+      React.createElement("div", { id: "imageField" })
+    ),
+    React.createElement("img", { id: "uploadImage", src: "/assets/img/upload.png", width: "25", height: "25", alt: "upload image", onClick: createImageInput })
+  );
+};
 
 // function that creates image input in tweet form
 var createImageInput = function createImageInput() {
@@ -122,7 +156,10 @@ var createImageInput = function createImageInput() {
     imageField.appendChild(input);
   }
 };
+//endregion
 
+// - Change password related-functions - region
+// function that creates the password change form
 var ChangePasswordWindow = function ChangePasswordWindow(props) {
   return React.createElement(
     "div",
@@ -165,33 +202,14 @@ var ChangePasswordWindow = function ChangePasswordWindow(props) {
   );
 };
 
+// function that renders the password change form into appContent
 var createPasswordWindow = function createPasswordWindow(csrf) {
   ReactDOM.render(React.createElement(ChangePasswordWindow, { csrf: csrf }), document.querySelector("#appContent"));
 };
+//endregion
 
-var TweetForm = function TweetForm(props) {
-  return React.createElement(
-    "div",
-    { id: "tweetFormDiv" },
-    React.createElement(
-      "form",
-      { id: "tweetForm",
-        onSubmit: handleTweet,
-        name: "tweetForm",
-        action: "/maker",
-        method: "POST",
-        className: "tweetForm",
-        enctype: "multipart/form-data"
-      },
-      React.createElement("input", { id: "tweetMessage", type: "text", name: "message", placeholder: "What's happening?" }),
-      React.createElement("input", { type: "hidden", name: "_csrf", value: props.csrf }),
-      React.createElement("input", { className: "makeTweetSubmit", type: "submit", value: "Tweet" }),
-      React.createElement("div", { id: "imageField" })
-    ),
-    React.createElement("img", { id: "uploadImage", src: "/assets/img/upload.png", width: "25", height: "25", alt: "upload image", onClick: createImageInput })
-  );
-};
-
+// - Change tweet related-functions - region
+// function that creates the change tweet form
 var MakeChangeForm = function MakeChangeForm(props) {
   return React.createElement(
     "form",
@@ -210,22 +228,29 @@ var MakeChangeForm = function MakeChangeForm(props) {
   );
 };
 
+// function that renders the change tweet form onto the page
 var renderChangeForm = function renderChangeForm(csrf, tweetId, message) {
   var chngId = "chng" + tweetId;
 
   ReactDOM.render(React.createElement(MakeChangeForm, { csrf: csrf, tweetId: tweetId, message: message }), document.getElementById(chngId));
 };
+//endregion
 
+// - Delete a tweet related-functions - region
+// function that removes the tweet UI options when 'Cancel' button is clicked
 var removeDeleteOpts = function removeDeleteOpts(id) {
+  // removes the 'Delete | Cancel' div
   var delDivId = "delDiv" + id;
   var delDiv = document.getElementById(delDivId);
   delDiv.parentNode.removeChild(delDiv);
 
+  // removes the options div
   var optDivId = "optDiv" + id;
   var optDiv = document.getElementById(optDivId);
   optDiv.parentNode.removeChild(optDiv);
 };
 
+// function that creates the 'Delete | Cancel' divs
 var MakeDeleteOptions = function MakeDeleteOptions(props) {
   var delDivId = "delDiv" + props.tweetId;
   return React.createElement(
@@ -248,11 +273,15 @@ var MakeDeleteOptions = function MakeDeleteOptions(props) {
   );
 };
 
+// function that renders the delete options divs onto the page
 var renderDeleteOptions = function renderDeleteOptions(csrf, tweetId) {
   var id = "del" + tweetId;
   ReactDOM.render(React.createElement(MakeDeleteOptions, { csrf: csrf, tweetId: tweetId }), document.getElementById(id));
 };
+//endregion
 
+// - Options related-functions - region
+// function that creates the options divs 
 var MakeOptions = function MakeOptions(props) {
   var optDivId = "optDiv" + props.tweetId;
   return React.createElement(
@@ -276,10 +305,12 @@ var MakeOptions = function MakeOptions(props) {
   );
 };
 
+// function that renders the options divs onto the page
 var renderOptions = function renderOptions(csrf, tweetId, tweetMessage) {
   var id = "opt" + tweetId;
   var optDiv = "optDiv" + tweetId;
 
+  // allows user to toggle options div when clicking on dropdown icon for a tweet
   if (!document.getElementById(optDiv)) {
     ReactDOM.render(React.createElement(MakeOptions, { csrf: csrf, tweetId: tweetId, tweetMessage: tweetMessage }), document.getElementById(id));
   } else {
@@ -290,7 +321,10 @@ var renderOptions = function renderOptions(csrf, tweetId, tweetMessage) {
     if (delDiv) delDiv.parentNode.removeChild(delDiv);
   }
 };
+//endregion
 
+// - Reply related-functions - region
+// function that creates the reply form
 var MakeReplyForm = function MakeReplyForm(props) {
   return React.createElement(
     "form",
@@ -309,15 +343,19 @@ var MakeReplyForm = function MakeReplyForm(props) {
   );
 };
 
+// function that renders the reply form onto the page
 var renderReplyDiv = function renderReplyDiv(csrf, tweetId, replyDivId) {
   ReactDOM.render(React.createElement(MakeReplyForm, { csrf: csrf, tweetId: tweetId }), document.getElementById(replyDivId));
 };
 
+// function that creates the replies divs
 var MakeReplies = function MakeReplies(props) {
+  // if replies does not exist, return an empty div
   if (!props.comments) {
     return React.createElement("div", null);
   }
 
+  // if no replies yet, return a default message
   if (props.comments.length === 0) {
     return React.createElement(
       "div",
@@ -330,6 +368,7 @@ var MakeReplies = function MakeReplies(props) {
     );
   }
 
+  // loop through all replies and map them to their individual divs
   var replies = props.comments.map(function (comment) {
     // source: https://stackoverflow.com/questions/10272773/split-string-on-the-first-white-space-occurrence
     return React.createElement(
@@ -348,6 +387,7 @@ var MakeReplies = function MakeReplies(props) {
     );
   });
 
+  // return list of replies
   return React.createElement(
     "div",
     null,
@@ -355,12 +395,14 @@ var MakeReplies = function MakeReplies(props) {
   );
 };
 
+// function that renders the replies onto the page
 var renderReplies = function renderReplies(e, linkId, repliesId) {
   e.preventDefault();
 
   var repliesDiv = document.getElementById(repliesId);
   var repliesLink = document.getElementById(linkId);
 
+  // toggles show/hide replies when user clicks 'Show/Hide replies' link
   if (repliesLink.innerHTML === "Show replies") {
     repliesLink.innerHTML = "Hide replies";
     repliesDiv.style.display = "block";
@@ -369,10 +411,14 @@ var renderReplies = function renderReplies(e, linkId, repliesId) {
     repliesDiv.style.display = "none";
   }
 };
+//endregion
 
+// - 'Tweet list' feed related-functions - region
+// function that encapsulates all tweets into a 'tweet list' feed
 var TweetList = function TweetList(props) {
   var csrf = props.csrf;
 
+  // if no tweets have been posted yet, return a default message
   if (props.tweets.length === 0) {
     return React.createElement(
       "div",
@@ -386,6 +432,7 @@ var TweetList = function TweetList(props) {
   }
 
   var tweetNodes = props.tweets.map(function (tweet) {
+    // create necessary unique ids for each tweet component
     var delId = "del" + tweet._id;
     var chngId = "chng" + tweet._id;
     var optId = "opt" + tweet._id;
@@ -395,15 +442,18 @@ var TweetList = function TweetList(props) {
     var repliesId = "replies" + tweet._id;
     var repliesLinkId = "repLink" + tweet._id;
 
+    // seperate the date data 
     var date = tweet.createdDate.substr(0, tweet.createdDate.indexOf('T'));
     var time = tweet.createdDate.substr(tweet.createdDate.indexOf('T') + 1);
     time = time.substr(0, time.length - 5);
 
+    // if an image is included in a tweet, store the data in a variable to be used
     var imgSrc = void 0;
     if (tweet.imgData) {
       imgSrc = tweet.imgData;
     }
 
+    // save the replies to be rendered later onto the page
     var replies = MakeReplies(tweet);
 
     return React.createElement(
@@ -469,12 +519,15 @@ var TweetList = function TweetList(props) {
   );
 };
 
+// function that renders the 'tweet list' feed onto the page
 var loadTweetsFromServer = function loadTweetsFromServer(csrf) {
   sendAjax('GET', '/getTweets', null, function (data) {
     ReactDOM.render(React.createElement(TweetList, { csrf: csrf, displayname: data.displayname, tweets: data.tweets }), document.querySelector("#tweets"));
   });
 };
+//endregion
 
+// function that sets up page initially
 var setup = function setup(csrf) {
   var changePasswordButton = document.querySelector("#changePassButton");
 
@@ -491,6 +544,7 @@ var setup = function setup(csrf) {
   loadTweetsFromServer(csrf);
 };
 
+// function that makes a request to the server to get a new token for the user
 var getToken = function getToken() {
   sendAjax('GET', '/getToken', null, function (result) {
     setup(result.csrfToken);
@@ -502,6 +556,7 @@ $(document).ready(function () {
 });
 "use strict";
 
+// function that handles error messages from the server
 var handleError = function handleError(message) {
   $("#errorMessage").text(message);
 };
@@ -522,10 +577,12 @@ var createNotFoundPage = function createNotFoundPage(message) {
   ReactDOM.render(React.createElement(NotFound, { message: message }), document.querySelector("#content"));
 };
 
+// function that redirects the user on request success
 var redirect = function redirect(response) {
   window.location = response.redirect;
 };
 
+// function that sends ajax requests to the server
 var sendAjax = function sendAjax(type, action, data, success) {
   $.ajax({
     cache: false,

@@ -1,11 +1,9 @@
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
-// const _ = require('underscore');
 
 let TweetModel = {};
 
 const convertId = mongoose.Types.ObjectId;
-// const setName = (name) => _.escape(name).trim();
 
 const TweetSchema = new mongoose.Schema({
   message: {
@@ -46,13 +44,13 @@ TweetSchema.statics.toAPI = (doc) => ({
   message: doc.message,
 });
 
+// function that finds all tweets in db
 TweetSchema.statics.findAll = (callback) => {
   TweetModel.find({})
     .select('displayname message createdDate imgData favorites comments').exec(callback);
 };
 
-// ownerId only displays the tweets from that owner
-// we want to display all the tweets from db
+// function that finds tweets only specific to owner
 TweetSchema.statics.findByOwner = (ownerId, callback) => {
   const search = {
     owner: convertId(ownerId),
@@ -61,7 +59,7 @@ TweetSchema.statics.findByOwner = (ownerId, callback) => {
   return TweetModel.find(search).select('displayname message').exec(callback);
 };
 
-// pass in the tweet's unique id
+// function that finds a tweet by tweetId only specific to owner
 TweetSchema.statics.findById = (ownerId, id, callback) => {
   const search = {
     owner: convertId(ownerId),
@@ -71,6 +69,7 @@ TweetSchema.statics.findById = (ownerId, id, callback) => {
   return TweetModel.findOne(search, callback);
 };
 
+// function that finds a tweet by tweetId for all users
 TweetSchema.statics.findByIdForAll = (id, callback) => {
   const search = {
     _id: id,

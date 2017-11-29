@@ -1,6 +1,7 @@
 const models = require('../models');
 const Tweet = models.Tweet;
 
+// function that renders tweet content into app page
 const makerPage = (req, res) => {
   Tweet.TweetModel.findByOwner(req.session.account._id, (err, docs) => {
     if (err) {
@@ -12,6 +13,7 @@ const makerPage = (req, res) => {
   });
 };
 
+// function that handles make tweet request or a new tweet on the server
 const makeTweet = (req, res) => {
   if (!req.body.message) {
     return res.status(400).json({ error: 'Message is required' });
@@ -33,7 +35,7 @@ const makeTweet = (req, res) => {
 
   const tweetPromise = newTweet.save();
 
-  tweetPromise.then(() => res.json({ redirect: '/maker' })); // maker?
+  tweetPromise.then(() => res.json({ redirect: '/maker' }));
 
   tweetPromise.catch((err) => {
     console.log(err);
@@ -44,6 +46,7 @@ const makeTweet = (req, res) => {
   return tweetPromise;
 };
 
+// function that handles get tweets on the server
 const getTweets = (request, response) => {
   const req = request;
   const res = response;
@@ -57,6 +60,7 @@ const getTweets = (request, response) => {
   });
 };
 
+// function that handles a change tweet request on the server
 const changeTweet = (req, res) => {
   if (!req.body.message) {
     return res.status(400).json({ error: 'Message is required to alter a tweet' });
@@ -74,7 +78,7 @@ const changeTweet = (req, res) => {
     changedTweet.message = req.body.message;
 
     const tweetPromise = doc.save();
-    tweetPromise.then(() => res.json({ redirect: '/maker' })); // maker?
+    tweetPromise.then(() => res.json({ redirect: '/maker' }));
 
     tweetPromise.catch((error) => {
       console.log(error);
@@ -85,6 +89,7 @@ const changeTweet = (req, res) => {
   });
 };
 
+// function that handles favoriting a tweet request on the server
 const favTweet = (req, res) => {
   if (!req.body.id) {
     return res.status(400).json({ error: 'Tweet cannot be found' });
@@ -113,6 +118,7 @@ const favTweet = (req, res) => {
   });
 };
 
+// function that handles delete a tweet request on the server
 const deleteTweet = (req, res) => {
   if (!req.body._id) {
     return res.status(400).json({ error: 'error occured. missing tweet id' });
@@ -132,6 +138,7 @@ const deleteTweet = (req, res) => {
   });
 };
 
+// function that handles replying to a tweet request on the server
 const replyTweet = (req, res) => {
   if (!req.body.message) {
     return res.status(400).json({ error: 'Message is required in reply' });

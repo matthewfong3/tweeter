@@ -1,3 +1,5 @@
+// - Handling requests to server - region
+// handles user login to server
 const handleLogin = (e) => {
   e.preventDefault();
   
@@ -13,6 +15,7 @@ const handleLogin = (e) => {
   return false;
 };
 
+// handles user sign up to server
 const handleSignup = (e) => {
   e.preventDefault();
   
@@ -30,7 +33,10 @@ const handleSignup = (e) => {
   
   return false;
 };
+//endregion
 
+// - Form creating related-functions - region
+// function that creates the login window form
 const LoginWindow = (props) => {
   return (
   <form id="loginForm" name="loginForm"
@@ -50,6 +56,7 @@ const LoginWindow = (props) => {
   );
 };
 
+// function that creates the sign up window form
 const SignupWindow = (props) => {
   return (
     <form id="signupForm"
@@ -73,7 +80,10 @@ const SignupWindow = (props) => {
     </form>
   );
 };
+//endregion
 
+// - Window rendering related-functions - region
+// function that renders the login window to content
 const createLoginWindow = (csrf) => {
   ReactDOM.render(
     <LoginWindow csrf={csrf} />,
@@ -81,13 +91,16 @@ const createLoginWindow = (csrf) => {
   );
 };
 
+// function that renders the sign up window to content
 const createSignupWindow = (csrf) => {
   ReactDOM.render(
     <SignupWindow csrf={csrf} />,
     document.querySelector("#content")
   );
 };
+//endregion
 
+// function that sets up page initially
 const setup = (csrf) => {
   const loginButton = document.querySelector("#loginButton");
   const signupButton = document.querySelector("#signupButton");
@@ -107,6 +120,7 @@ const setup = (csrf) => {
   createLoginWindow(csrf); //default view
 };
 
+// function that makes a request to the server to get a new token for the user
 const getToken = () => {
   sendAjax('GET', '/getToken', null, (result) => {
     setup(result.csrfToken);

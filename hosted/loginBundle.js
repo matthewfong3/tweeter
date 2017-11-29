@@ -1,5 +1,7 @@
 "use strict";
 
+// - Handling requests to server - region
+// handles user login to server
 var handleLogin = function handleLogin(e) {
   e.preventDefault();
 
@@ -15,6 +17,7 @@ var handleLogin = function handleLogin(e) {
   return false;
 };
 
+// handles user sign up to server
 var handleSignup = function handleSignup(e) {
   e.preventDefault();
 
@@ -32,7 +35,10 @@ var handleSignup = function handleSignup(e) {
 
   return false;
 };
+//endregion
 
+// - Form creating related-functions - region
+// function that creates the login window form
 var LoginWindow = function LoginWindow(props) {
   return React.createElement(
     "form",
@@ -64,6 +70,7 @@ var LoginWindow = function LoginWindow(props) {
   );
 };
 
+// function that creates the sign up window form
 var SignupWindow = function SignupWindow(props) {
   return React.createElement(
     "form",
@@ -107,15 +114,21 @@ var SignupWindow = function SignupWindow(props) {
     React.createElement("input", { className: "formSubmit", type: "submit", value: "Sign Up" })
   );
 };
+//endregion
 
+// - Window rendering related-functions - region
+// function that renders the login window to content
 var createLoginWindow = function createLoginWindow(csrf) {
   ReactDOM.render(React.createElement(LoginWindow, { csrf: csrf }), document.querySelector("#content"));
 };
 
+// function that renders the sign up window to content
 var createSignupWindow = function createSignupWindow(csrf) {
   ReactDOM.render(React.createElement(SignupWindow, { csrf: csrf }), document.querySelector("#content"));
 };
+//endregion
 
+// function that sets up page initially
 var setup = function setup(csrf) {
   var loginButton = document.querySelector("#loginButton");
   var signupButton = document.querySelector("#signupButton");
@@ -135,6 +148,7 @@ var setup = function setup(csrf) {
   createLoginWindow(csrf); //default view
 };
 
+// function that makes a request to the server to get a new token for the user
 var getToken = function getToken() {
   sendAjax('GET', '/getToken', null, function (result) {
     setup(result.csrfToken);
@@ -146,6 +160,7 @@ $(document).ready(function () {
 });
 "use strict";
 
+// function that handles error messages from the server
 var handleError = function handleError(message) {
   $("#errorMessage").text(message);
 };
@@ -166,10 +181,12 @@ var createNotFoundPage = function createNotFoundPage(message) {
   ReactDOM.render(React.createElement(NotFound, { message: message }), document.querySelector("#content"));
 };
 
+// function that redirects the user on request success
 var redirect = function redirect(response) {
   window.location = response.redirect;
 };
 
+// function that sends ajax requests to the server
 var sendAjax = function sendAjax(type, action, data, success) {
   $.ajax({
     cache: false,

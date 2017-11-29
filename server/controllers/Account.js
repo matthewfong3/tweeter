@@ -1,16 +1,18 @@
 const models = require('../models');
-
 const Account = models.Account;
 
+// function that renders login page
 const loginPage = (req, res) => {
   res.render('login', { csrfToken: req.csrfToken() });
 };
 
+// function that destroys user session and redirects to 'home page'
 const logout = (req, res) => {
   req.session.destroy();
   res.redirect('/');
 };
 
+// function that handles login request on the server
 const login = (request, response) => {
   const req = request;
   const res = response;
@@ -23,16 +25,16 @@ const login = (request, response) => {
     return res.status(400).json({ error: 'All fields are required' });
   }
 
-  // more callback hell?
   return Account.AccountModel.authenticate(username, password, (err, account) => {
     if (err || !account) { return res.status(401).json({ error: 'Wrong username or password' }); }
 
     req.session.account = Account.AccountModel.toAPI(account);
 
-    return res.json({ redirect: '/maker' }); // /maker?
+    return res.json({ redirect: '/maker' });
   });
 };
 
+// function that handles sign up request on the server
 const signup = (request, response) => {
   const req = request;
   const res = response;
@@ -50,14 +52,14 @@ const signup = (request, response) => {
   // source: https://stackoverflow.com/questions/13840143/jquery-check-if-special-characters-exists-in-string
   if (/^[a-zA-Z0-9- ]*$/.test(req.body.username) === false ||
       /^[a-zA-Z0-9- ]*$/.test(req.body.displayname) === false) {
-    return res.status(400).json({ error: 'Username cannot contain special characters' });
+    return res.status(400)
+      .json({ error: 'Username or Displayname cannot contain special characters' });
   }
 
   if (req.body.password !== req.body.password2) {
     return res.status(400).json({ error: 'Passwords do not match' });
   }
 
-  // callback hell
   return Account.AccountModel.generateHash(req.body.password, (salt, hash) => {
     const accountData = {
       username: req.body.username,
@@ -72,7 +74,7 @@ const signup = (request, response) => {
 
     savePromise.then(() => {
       req.session.account = Account.AccountModel.toAPI(newAccount);
-      return res.json({ redirect: '/maker' }); // maker?
+      return res.json({ redirect: '/maker' });
     });
 
     savePromise.catch((err) => {
@@ -85,6 +87,7 @@ const signup = (request, response) => {
   });
 };
 
+// function that handles password change requests on the server
 const changePassword = (req, res) => {
   if (!req.body.oldPass || !req.body.newPass1 || !req.body.newPass2) {
     return res.status(400).json({ error: 'All fields are required' });
@@ -96,18 +99,18 @@ const changePassword = (req, res) => {
 
   const password = `${req.body.oldPass}`;
 
+  // validate old password first
   return Account.AccountModel.findById(req.session.account._id, password, (err, doc) => {
     if (err) {
       console.log(err);
       return res.status(400).json({ error: 'An error occurred' });
     }
 
-    // console.log(doc.password);
-
     if (!err && !doc) {
       return res.status(400).json({ error: 'old password does not match' });
     }
 
+    // if we get this far, generate hash for new password
     return Account.AccountModel.generateHash(req.body.newPass1, (salt, hash) => {
       const changedDoc = doc;
       changedDoc.password = hash;
@@ -132,6 +135,7 @@ const notFound = (req, res) => {
   res.status(404).sendFile(`${__dirname}/../views/notFound.handlebars`);
 };
 
+// function that sends the user back a new csrfToken
 const getToken = (request, response) => {
   const req = request;
   const res = response;

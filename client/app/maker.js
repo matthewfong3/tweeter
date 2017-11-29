@@ -1,3 +1,5 @@
+// - Handling requests to server - region
+// handles user tweet to server
 const handleTweet = (e) => {
   e.preventDefault();
   
@@ -12,11 +14,11 @@ const handleTweet = (e) => {
     });
   });
   
-  // remove image input field
+  // remove image input field if it exists
   let imageInput = document.querySelector("#imageInput");
   if(imageInput) imageInput.parentNode.removeChild(imageInput);
   
-  // change tweet placeholder text back
+  // change tweet placeholder text back to default
   let tweetMsg = document.querySelector("#tweetMessage");
   tweetMsg.placeholder = "What's happening?";
   tweetMsg.value = '';
@@ -24,6 +26,7 @@ const handleTweet = (e) => {
   return false;
 };
 
+// handles user changed tweet to server
 const handleChange = (e) => {
   e.preventDefault();
   
@@ -38,6 +41,7 @@ const handleChange = (e) => {
     });
   });
   
+  // remove option div on change tweet submit
   let optDivId = "optDiv" + $("#changeTweetForm").attr('data-ref');
   let optDiv = document.getElementById(optDivId);
   if(optDiv) optDiv.parentNode.removeChild(optDiv);
@@ -45,6 +49,7 @@ const handleChange = (e) => {
   return false;
 };
 
+// handles user replies to a tweet to server
 const handleReply = (e) => {
   e.preventDefault();
   
@@ -59,10 +64,12 @@ const handleReply = (e) => {
     });
   });
   
+  // remove reply form on submit
   let replyForm = document.querySelector("#replyTweetForm");
   replyForm.parentNode.removeChild(replyForm);
 };
 
+// handles password change to server
 const handlePassword = (e) => {
   e.preventDefault();
   
@@ -71,11 +78,10 @@ const handlePassword = (e) => {
     return false;
   }
   
-  console.log($("#passwordForm").serialize());
-  
   sendAjax('POST', $("#passwordForm").attr("action"), $("#passwordForm").serialize(), redirect);
 };
 
+// handles delete a tweet request to server
 const handleDelete = (e, csrf, tweetId) => {
   e.preventDefault();
   
@@ -90,7 +96,9 @@ const handleDelete = (e, csrf, tweetId) => {
   return false;
 };
 
+// handles favoriting a tweet to server
 const handleFav = (csrf, tweetId) => {  
+  // change heart icon image
   let favId = 'fav' + tweetId;
   let favButton = document.getElementById(favId);
   favButton.src = '/assets/img/heart-fill.png';
@@ -106,6 +114,30 @@ const handleFav = (csrf, tweetId) => {
   } 
   favButton.dataset.faved = "true";
 };
+//endregion
+
+// - Tweet related-functions - region
+// function that creates the tweet form for user
+const TweetForm = (props) => {
+  return(
+    <div id="tweetFormDiv">
+      <form id="tweetForm"
+        onSubmit={handleTweet}
+        name="tweetForm"
+        action="/maker"
+        method="POST"
+        className="tweetForm"
+        enctype="multipart/form-data" 
+      >
+        <input id="tweetMessage" type="text" name="message" placeholder="What's happening?"/>
+        <input type="hidden" name="_csrf" value={props.csrf}/>
+        <input className="makeTweetSubmit" type="submit" value="Tweet"/>
+        <div id="imageField"></div>
+      </form>
+      <img id="uploadImage" src="/assets/img/upload.png" width="25" height="25" alt="upload image" onClick={createImageInput}/>
+    </div>
+  );
+};
 
 // function that creates image input in tweet form
 const createImageInput = () => {
@@ -120,7 +152,10 @@ const createImageInput = () => {
     imageField.appendChild(input); 
   }
 };
+//endregion
 
+// - Change password related-functions - region
+// function that creates the password change form
 const ChangePasswordWindow = (props) => {
   return(
     <div id="passwordDiv">
@@ -145,33 +180,16 @@ const ChangePasswordWindow = (props) => {
   );
 };
 
+// function that renders the password change form into appContent
 const createPasswordWindow = (csrf) => {
   ReactDOM.render(
     <ChangePasswordWindow csrf={csrf} />, document.querySelector("#appContent")
   );
 };
+//endregion
 
-const TweetForm = (props) => {
-  return(
-    <div id="tweetFormDiv">
-      <form id="tweetForm"
-        onSubmit={handleTweet}
-        name="tweetForm"
-        action="/maker"
-        method="POST"
-        className="tweetForm"
-        enctype="multipart/form-data" 
-      >
-        <input id="tweetMessage" type="text" name="message" placeholder="What's happening?"/>
-        <input type="hidden" name="_csrf" value={props.csrf}/>
-        <input className="makeTweetSubmit" type="submit" value="Tweet"/>
-        <div id="imageField"></div>
-      </form>
-      <img id="uploadImage" src="/assets/img/upload.png" width="25" height="25" alt="upload image" onClick={createImageInput}/>
-    </div>
-  );
-};
-
+// - Change tweet related-functions - region
+// function that creates the change tweet form
 const MakeChangeForm = (props) => {
   return(
     <form id="changeTweetForm"
@@ -190,6 +208,7 @@ const MakeChangeForm = (props) => {
   );
 };
 
+// function that renders the change tweet form onto the page
 const renderChangeForm = (csrf, tweetId, message) => {
   let chngId = "chng" + tweetId;
    
@@ -197,17 +216,23 @@ const renderChangeForm = (csrf, tweetId, message) => {
     <MakeChangeForm csrf={csrf} tweetId={tweetId} message={message} />, document.getElementById(chngId)
   );
 };
+//endregion
 
+// - Delete a tweet related-functions - region
+// function that removes the tweet UI options when 'Cancel' button is clicked
 const removeDeleteOpts = (id) => {
+  // removes the 'Delete | Cancel' div
   let delDivId = "delDiv" + id;
   let delDiv = document.getElementById(delDivId);
   delDiv.parentNode.removeChild(delDiv);
   
+  // removes the options div
   let optDivId = "optDiv" + id;
   let optDiv = document.getElementById(optDivId);
   optDiv.parentNode.removeChild(optDiv);
 };
 
+// function that creates the 'Delete | Cancel' divs
 const MakeDeleteOptions = (props) => {
   let delDivId = "delDiv" + props.tweetId;
   return(
@@ -218,13 +243,17 @@ const MakeDeleteOptions = (props) => {
   );
 }
 
+// function that renders the delete options divs onto the page
 const renderDeleteOptions = (csrf, tweetId) => {
   let id = "del" + tweetId;
   ReactDOM.render(
     <MakeDeleteOptions csrf={csrf} tweetId={tweetId} />, document.getElementById(id)
   );
 };
+//endregion
 
+// - Options related-functions - region
+// function that creates the options divs 
 const MakeOptions = (props) => {
     let optDivId = "optDiv" + props.tweetId;
     return(
@@ -236,10 +265,12 @@ const MakeOptions = (props) => {
     );
 };
 
+// function that renders the options divs onto the page
 const renderOptions = (csrf, tweetId, tweetMessage) => {
   let id = "opt" + tweetId;
   let optDiv = "optDiv" + tweetId;
-
+  
+  // allows user to toggle options div when clicking on dropdown icon for a tweet
   if(!document.getElementById(optDiv)){
     ReactDOM.render(
       <MakeOptions csrf={csrf} tweetId={tweetId} tweetMessage={tweetMessage} />, document.getElementById(id)
@@ -252,7 +283,10 @@ const renderOptions = (csrf, tweetId, tweetMessage) => {
     if(delDiv) delDiv.parentNode.removeChild(delDiv);
   }
 };
+//endregion
 
+// - Reply related-functions - region
+// function that creates the reply form
 const MakeReplyForm = (props) => {
   return(
     <form id="replyTweetForm"
@@ -271,19 +305,23 @@ const MakeReplyForm = (props) => {
   );
 };
 
+// function that renders the reply form onto the page
 const renderReplyDiv = (csrf, tweetId, replyDivId) => {
   ReactDOM.render(
     <MakeReplyForm csrf={csrf} tweetId={tweetId} />, document.getElementById(replyDivId)
   );
 };
 
+// function that creates the replies divs
 const MakeReplies = (props) => {
+  // if replies does not exist, return an empty div
   if(!props.comments){
     return(
       <div></div>
     );
   }
   
+  // if no replies yet, return a default message
   if(props.comments.length === 0){
     return(
       <div className="replyDiv">
@@ -292,6 +330,7 @@ const MakeReplies = (props) => {
     );
   }
   
+  // loop through all replies and map them to their individual divs
   const replies = props.comments.map((comment) => {
     // source: https://stackoverflow.com/questions/10272773/split-string-on-the-first-white-space-occurrence
     return(
@@ -302,6 +341,7 @@ const MakeReplies = (props) => {
     );
   });
   
+  // return list of replies
   return(
     <div>
       {replies}
@@ -309,12 +349,14 @@ const MakeReplies = (props) => {
   );
 };
 
+// function that renders the replies onto the page
 const renderReplies = (e, linkId, repliesId) => { 
   e.preventDefault();
   
   let repliesDiv = document.getElementById(repliesId);
   let repliesLink = document.getElementById(linkId);
   
+  // toggles show/hide replies when user clicks 'Show/Hide replies' link
   if(repliesLink.innerHTML === "Show replies"){
     repliesLink.innerHTML = "Hide replies";
     repliesDiv.style.display = "block";
@@ -324,10 +366,14 @@ const renderReplies = (e, linkId, repliesId) => {
     repliesDiv.style.display = "none";
   }
 };
+//endregion
 
+// - 'Tweet list' feed related-functions - region
+// function that encapsulates all tweets into a 'tweet list' feed
 const TweetList = (props) => {
   let csrf = props.csrf;
   
+  // if no tweets have been posted yet, return a default message
   if(props.tweets.length === 0){
     return(
       <div className="tweetList">
@@ -337,6 +383,7 @@ const TweetList = (props) => {
   }
   
   const tweetNodes = props.tweets.map((tweet) => {
+    // create necessary unique ids for each tweet component
     let delId = "del" + tweet._id;
     let chngId = "chng" + tweet._id;
     let optId = "opt" + tweet._id;
@@ -345,16 +392,19 @@ const TweetList = (props) => {
     let replyDivId = "replyDiv" + tweet._id;
     let repliesId = "replies" + tweet._id;
     let repliesLinkId = "repLink" + tweet._id;
-     
+    
+    // seperate the date data 
     let date = tweet.createdDate.substr(0,tweet.createdDate.indexOf('T'));
     let time = tweet.createdDate.substr(tweet.createdDate.indexOf('T')+1);
     time = time.substr(0, time.length - 5);
     
+    // if an image is included in a tweet, store the data in a variable to be used
     let imgSrc;
     if(tweet.imgData){
       imgSrc = tweet.imgData;
     }
     
+    // save the replies to be rendered later onto the page
     let replies = MakeReplies(tweet);
     
     return(
@@ -392,6 +442,7 @@ const TweetList = (props) => {
   );
 };
 
+// function that renders the 'tweet list' feed onto the page
 const loadTweetsFromServer = (csrf) => {
   sendAjax('GET', '/getTweets', null, (data) => {
     ReactDOM.render(
@@ -399,7 +450,9 @@ const loadTweetsFromServer = (csrf) => {
     );
   });
 };
+//endregion
 
+// function that sets up page initially
 const setup = function(csrf){
   const changePasswordButton = document.querySelector("#changePassButton");
 
@@ -420,6 +473,7 @@ const setup = function(csrf){
   loadTweetsFromServer(csrf);
 };
 
+// function that makes a request to the server to get a new token for the user
 const getToken = () => {
   sendAjax('GET', '/getToken', null, (result) => {
     setup(result.csrfToken);
