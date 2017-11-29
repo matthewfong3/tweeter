@@ -28,7 +28,7 @@ const makeTweet = (req, res) => {
   if (req.body.imgData) {
     tweetData.imgData = req.body.imgData;
   }
-  
+
   const newTweet = new Tweet.TweetModel(tweetData);
 
   const tweetPromise = newTweet.save();
@@ -146,7 +146,7 @@ const replyTweet = (req, res) => {
     if (!doc) return res.status(400).json({ error: 'No tweet found' });
 
     const changedTweet = doc;
-    changedTweet.comments.push(req.session.account.displayname + ":;" + req.body.message);
+    changedTweet.comments.push(`${req.session.account.displayname}:;${req.body.message}`);
 
     const tweetPromise = doc.save();
     tweetPromise.then(() => res.json({ redirect: '/maker' }));

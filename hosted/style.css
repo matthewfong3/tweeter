@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+
 html, body {
     height: 100%;
     width: 100%;
@@ -7,6 +9,7 @@ html, body {
 
 body{
   background-color: rgb(230, 236, 240);
+  font-family: 'Open Sans', sans-serif;
 }
 
 #logo {
@@ -58,9 +61,9 @@ nav {
 }
 
 .mainForm {
-    width: 350px;
+    width: 450px;
     margin: 0 auto;
-    font-size: 1.2em;
+    font-size: 1.1em;
 }
 
 .mainForm h3 {
@@ -69,10 +72,14 @@ nav {
 
 .mainForm label {
     display: inline-block;
-    width: 100px;
+    width: 180px;
     margin-right: 10px;
     text-align: right;
-    font-size: 1.2em;
+    font-size: 1.1em;
+}
+
+#loginForm label, #loginForm label{
+  width: 150px;
 }
 
 .formSubmit {
@@ -152,7 +159,7 @@ nav {
   background-color: rgb(245, 248, 250);
 }
 
-.makeTweetSubmit, .changeTweetSubmit {
+.makeTweetSubmit, .changeTweetSubmit, .replyTweetSubmit {
   font-size: 1.3em;
   color: white;
   text-decoration: none;
@@ -161,14 +168,18 @@ nav {
   background-color: #55acee;
 }
 
-.makeTweetSubmit:hover, .changeTweetSubmit:hover, .changeTweet:hover, .deleteTweet:hover, .delYes:hover, .delNo:hover {
+.makeTweetSubmit:hover, .changeTweetSubmit:hover, .changeTweet:hover, .deleteTweet:hover, .delYes:hover, .delNo:hover, .replyTweetSubmit:hover {
   transition: background-color 0.8s ease;
   background-color: #66bdff;
 }
 
-#tweetMessage {
+#tweetMessage, #imageInput, #replyMessage, #changeTweetMessage {
   border-radius: 4px;
   padding: 5px;
+}
+
+#imageInput, #replyMessage {
+  margin-top: 3px;
 }
 
 .tweetImg {
@@ -207,9 +218,9 @@ hr {
   border-radius: 5px;
   border-top: 1.5px solid #ddd;
   position: relative;
-  left: 185px;
-  top: 79px;
-  width: 95px;
+  left: 198px;
+  top: 85px;
+  width: 108px;
 }
 
 .delYes {

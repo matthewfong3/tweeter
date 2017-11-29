@@ -1,5 +1,3 @@
-let displayOptions = false; // no GLOBALS
-
 const handleTweet = (e) => {
   e.preventDefault();
   
@@ -43,8 +41,6 @@ const handleChange = (e) => {
   let optDivId = "optDiv" + $("#changeTweetForm").attr('data-ref');
   let optDiv = document.getElementById(optDivId);
   if(optDiv) optDiv.parentNode.removeChild(optDiv);
-  
-  displayOptions = false;
   
   return false;
 };
@@ -90,8 +86,6 @@ const handleDelete = (e, csrf, tweetId) => {
       loadTweetsFromServer(result.csrfToken);
     });
   });
-  
-  displayOptions = false;
   
   return false;
 };
@@ -200,7 +194,7 @@ const renderChangeForm = (csrf, tweetId, message) => {
   let chngId = "chng" + tweetId;
    
   ReactDOM.render(
-    <MakeChangeForm csrf={csrf} tweetId={tweetId} message={message}/>, document.getElementById(chngId)
+    <MakeChangeForm csrf={csrf} tweetId={tweetId} message={message} />, document.getElementById(chngId)
   );
 };
 
@@ -212,8 +206,6 @@ const removeDeleteOpts = (id) => {
   let optDivId = "optDiv" + id;
   let optDiv = document.getElementById(optDivId);
   optDiv.parentNode.removeChild(optDiv);
-  
-  displayOptions = false;
 };
 
 const MakeDeleteOptions = (props) => {
@@ -229,35 +221,36 @@ const MakeDeleteOptions = (props) => {
 const renderDeleteOptions = (csrf, tweetId) => {
   let id = "del" + tweetId;
   ReactDOM.render(
-    <MakeDeleteOptions csrf={csrf} tweetId={tweetId}/>, document.getElementById(id)
+    <MakeDeleteOptions csrf={csrf} tweetId={tweetId} />, document.getElementById(id)
   );
 };
 
 const MakeOptions = (props) => {
-  if(displayOptions){
-  let optDivId = "optDiv" + props.tweetId;
-  return(
-    <div id={optDivId} className="optDiv">
-      <div className="changeTweet" onClick={() => renderChangeForm(props.csrf, props.tweetId, props.tweetMessage)}>Edit Tweet</div>
-      <hr/>
-      <div className="deleteTweet" onClick={() => renderDeleteOptions(props.csrf, props.tweetId)}>Delete Tweet</div>
-    </div>
-  );
-  } else {
-    let delDivId = "delDiv" + props.tweetId;
-    let delDiv = document.getElementById(delDivId);
-    if(delDiv) delDiv.parentNode.removeChild(delDiv);
-    
-    return(<div></div>);
-  }
+    let optDivId = "optDiv" + props.tweetId;
+    return(
+      <div id={optDivId} className="optDiv">
+        <div className="changeTweet" onClick={() => renderChangeForm(props.csrf, props.tweetId, props.tweetMessage)}>Edit Tweet</div>
+        <hr/>
+        <div className="deleteTweet" onClick={() => renderDeleteOptions(props.csrf, props.tweetId)}>Delete Tweet</div>
+      </div>
+    );
 };
 
 const renderOptions = (csrf, tweetId, tweetMessage) => {
-  displayOptions = !displayOptions;
   let id = "opt" + tweetId;
-  ReactDOM.render(
-    <MakeOptions csrf={csrf} tweetId={tweetId} tweetMessage={tweetMessage}/>, document.getElementById(id)
-  );
+  let optDiv = "optDiv" + tweetId;
+
+  if(!document.getElementById(optDiv)){
+    ReactDOM.render(
+      <MakeOptions csrf={csrf} tweetId={tweetId} tweetMessage={tweetMessage} />, document.getElementById(id)
+    );
+  } else {
+    document.getElementById(id).removeChild(document.getElementById(optDiv));
+    
+    let delDivId = "delDiv" + tweetId;
+    let delDiv = document.getElementById(delDivId);
+    if(delDiv) delDiv.parentNode.removeChild(delDiv);
+  }
 };
 
 const MakeReplyForm = (props) => {
@@ -285,6 +278,12 @@ const renderReplyDiv = (csrf, tweetId, replyDivId) => {
 };
 
 const MakeReplies = (props) => {
+  if(!props.comments){
+    return(
+      <div></div>
+    );
+  }
+  
   if(props.comments.length === 0){
     return(
       <div className="replyDiv">
@@ -310,12 +309,20 @@ const MakeReplies = (props) => {
   );
 };
 
-const renderReplies = (e, repliesId, comments) => { 
+const renderReplies = (e, linkId, repliesId) => { 
   e.preventDefault();
-  let id = repliesId;
-  ReactDOM.render(
-    <MakeReplies comments={comments}/>, document.getElementById(id)
-  );
+  
+  let repliesDiv = document.getElementById(repliesId);
+  let repliesLink = document.getElementById(linkId);
+  
+  if(repliesLink.innerHTML === "Show replies"){
+    repliesLink.innerHTML = "Hide replies";
+    repliesDiv.style.display = "block";
+  }
+  else{
+    repliesLink.innerHTML = "Show replies";
+    repliesDiv.style.display = "none";
+  }
 };
 
 const TweetList = (props) => {
@@ -337,14 +344,19 @@ const TweetList = (props) => {
     let replyId = "reply" + tweet._id;
     let replyDivId = "replyDiv" + tweet._id;
     let repliesId = "replies" + tweet._id;
+    let repliesLinkId = "repLink" + tweet._id;
+     
+    let date = tweet.createdDate.substr(0,tweet.createdDate.indexOf('T'));
+    let time = tweet.createdDate.substr(tweet.createdDate.indexOf('T')+1);
+    time = time.substr(0, time.length - 5);
     
     let imgSrc;
-    
     if(tweet.imgData){
       imgSrc = tweet.imgData;
     }
     
-    let comments = tweet.comments;
+    let replies = MakeReplies(tweet);
+    
     return(
       <div key={tweet._id} className="tweet" >
         {props.displayname == tweet.displayname &&
@@ -352,7 +364,7 @@ const TweetList = (props) => {
         }
         <div id={optId}></div>
         <div id={delId}></div>
-        <h4 className="tweetDisplayName">{tweet.displayname} | {tweet.createdDate}</h4>
+        <h4 className="tweetDisplayName">{tweet.displayname} | {date} · {time}</h4>
         <p className="tweetMessage" id={chngId}>{tweet.message}</p>
         {imgSrc != null &&
           <img className="tweetImg" src={imgSrc} width="300" height="150" alt="image here"/>
@@ -363,10 +375,12 @@ const TweetList = (props) => {
           {tweet.favorites > 0 &&
             <span> {tweet.favorites} </span>
           }
-          <a href="#" className="viewReplies" onClick={(e) => renderReplies(e, repliesId, comments)}>Show replies</a>
+          <a href="#" id={repliesLinkId} className="viewReplies" onClick={(e) => renderReplies(e, repliesLinkId, repliesId)}>Hide replies</a>
         </div>
         <div id={replyDivId}></div>
-        <div id={repliesId} className="replies"></div>
+        <div id={repliesId} className="replies">
+          {replies}
+        </div>
       </div>
     );
   });
@@ -388,7 +402,7 @@ const loadTweetsFromServer = (csrf) => {
 
 const setup = function(csrf){
   const changePasswordButton = document.querySelector("#changePassButton");
-  
+
   changePasswordButton.addEventListener("click", (e) => {
     e.preventDefault();
     createPasswordWindow(csrf);
@@ -400,7 +414,7 @@ const setup = function(csrf){
   );
   
   ReactDOM.render(
-    <TweetList tweets={[]} csrf={csrf}/>, document.querySelector("#tweets")
+    <TweetList tweets={[]} csrf={csrf} />, document.querySelector("#tweets")
   );
   
   loadTweetsFromServer(csrf);

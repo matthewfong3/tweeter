@@ -1,7 +1,5 @@
 "use strict";
 
-var displayOptions = false; // no GLOBALS
-
 var handleTweet = function handleTweet(e) {
   e.preventDefault();
 
@@ -45,8 +43,6 @@ var handleChange = function handleChange(e) {
   var optDivId = "optDiv" + $("#changeTweetForm").attr('data-ref');
   var optDiv = document.getElementById(optDivId);
   if (optDiv) optDiv.parentNode.removeChild(optDiv);
-
-  displayOptions = false;
 
   return false;
 };
@@ -92,8 +88,6 @@ var handleDelete = function handleDelete(e, csrf, tweetId) {
       loadTweetsFromServer(result.csrfToken);
     });
   });
-
-  displayOptions = false;
 
   return false;
 };
@@ -230,8 +224,6 @@ var removeDeleteOpts = function removeDeleteOpts(id) {
   var optDivId = "optDiv" + id;
   var optDiv = document.getElementById(optDivId);
   optDiv.parentNode.removeChild(optDiv);
-
-  displayOptions = false;
 };
 
 var MakeDeleteOptions = function MakeDeleteOptions(props) {
@@ -262,40 +254,41 @@ var renderDeleteOptions = function renderDeleteOptions(csrf, tweetId) {
 };
 
 var MakeOptions = function MakeOptions(props) {
-  if (displayOptions) {
-    var optDivId = "optDiv" + props.tweetId;
-    return React.createElement(
+  var optDivId = "optDiv" + props.tweetId;
+  return React.createElement(
+    "div",
+    { id: optDivId, className: "optDiv" },
+    React.createElement(
       "div",
-      { id: optDivId, className: "optDiv" },
-      React.createElement(
-        "div",
-        { className: "changeTweet", onClick: function onClick() {
-            return renderChangeForm(props.csrf, props.tweetId, props.tweetMessage);
-          } },
-        "Edit Tweet"
-      ),
-      React.createElement("hr", null),
-      React.createElement(
-        "div",
-        { className: "deleteTweet", onClick: function onClick() {
-            return renderDeleteOptions(props.csrf, props.tweetId);
-          } },
-        "Delete Tweet"
-      )
-    );
-  } else {
-    var delDivId = "delDiv" + props.tweetId;
-    var delDiv = document.getElementById(delDivId);
-    if (delDiv) delDiv.parentNode.removeChild(delDiv);
-
-    return React.createElement("div", null);
-  }
+      { className: "changeTweet", onClick: function onClick() {
+          return renderChangeForm(props.csrf, props.tweetId, props.tweetMessage);
+        } },
+      "Edit Tweet"
+    ),
+    React.createElement("hr", null),
+    React.createElement(
+      "div",
+      { className: "deleteTweet", onClick: function onClick() {
+          return renderDeleteOptions(props.csrf, props.tweetId);
+        } },
+      "Delete Tweet"
+    )
+  );
 };
 
 var renderOptions = function renderOptions(csrf, tweetId, tweetMessage) {
-  displayOptions = !displayOptions;
   var id = "opt" + tweetId;
-  ReactDOM.render(React.createElement(MakeOptions, { csrf: csrf, tweetId: tweetId, tweetMessage: tweetMessage }), document.getElementById(id));
+  var optDiv = "optDiv" + tweetId;
+
+  if (!document.getElementById(optDiv)) {
+    ReactDOM.render(React.createElement(MakeOptions, { csrf: csrf, tweetId: tweetId, tweetMessage: tweetMessage }), document.getElementById(id));
+  } else {
+    document.getElementById(id).removeChild(document.getElementById(optDiv));
+
+    var delDivId = "delDiv" + tweetId;
+    var delDiv = document.getElementById(delDivId);
+    if (delDiv) delDiv.parentNode.removeChild(delDiv);
+  }
 };
 
 var MakeReplyForm = function MakeReplyForm(props) {
@@ -321,6 +314,10 @@ var renderReplyDiv = function renderReplyDiv(csrf, tweetId, replyDivId) {
 };
 
 var MakeReplies = function MakeReplies(props) {
+  if (!props.comments) {
+    return React.createElement("div", null);
+  }
+
   if (props.comments.length === 0) {
     return React.createElement(
       "div",
@@ -358,10 +355,19 @@ var MakeReplies = function MakeReplies(props) {
   );
 };
 
-var renderReplies = function renderReplies(e, repliesId, comments) {
+var renderReplies = function renderReplies(e, linkId, repliesId) {
   e.preventDefault();
-  var id = repliesId;
-  ReactDOM.render(React.createElement(MakeReplies, { comments: comments }), document.getElementById(id));
+
+  var repliesDiv = document.getElementById(repliesId);
+  var repliesLink = document.getElementById(linkId);
+
+  if (repliesLink.innerHTML === "Show replies") {
+    repliesLink.innerHTML = "Hide replies";
+    repliesDiv.style.display = "block";
+  } else {
+    repliesLink.innerHTML = "Show replies";
+    repliesDiv.style.display = "none";
+  }
 };
 
 var TweetList = function TweetList(props) {
@@ -387,14 +393,19 @@ var TweetList = function TweetList(props) {
     var replyId = "reply" + tweet._id;
     var replyDivId = "replyDiv" + tweet._id;
     var repliesId = "replies" + tweet._id;
+    var repliesLinkId = "repLink" + tweet._id;
+
+    var date = tweet.createdDate.substr(0, tweet.createdDate.indexOf('T'));
+    var time = tweet.createdDate.substr(tweet.createdDate.indexOf('T') + 1);
+    time = time.substr(0, time.length - 5);
 
     var imgSrc = void 0;
-
     if (tweet.imgData) {
       imgSrc = tweet.imgData;
     }
 
-    var comments = tweet.comments;
+    var replies = MakeReplies(tweet);
+
     return React.createElement(
       "div",
       { key: tweet._id, className: "tweet" },
@@ -408,7 +419,9 @@ var TweetList = function TweetList(props) {
         { className: "tweetDisplayName" },
         tweet.displayname,
         " | ",
-        tweet.createdDate
+        date,
+        " \xB7 ",
+        time
       ),
       React.createElement(
         "p",
@@ -434,14 +447,18 @@ var TweetList = function TweetList(props) {
         ),
         React.createElement(
           "a",
-          { href: "#", className: "viewReplies", onClick: function onClick(e) {
-              return renderReplies(e, repliesId, comments);
+          { href: "#", id: repliesLinkId, className: "viewReplies", onClick: function onClick(e) {
+              return renderReplies(e, repliesLinkId, repliesId);
             } },
-          "Show replies"
+          "Hide replies"
         )
       ),
       React.createElement("div", { id: replyDivId }),
-      React.createElement("div", { id: repliesId, className: "replies" })
+      React.createElement(
+        "div",
+        { id: repliesId, className: "replies" },
+        replies
+      )
     );
   });
 
@@ -519,7 +536,6 @@ var sendAjax = function sendAjax(type, action, data, success) {
     success: success,
     error: function error(xhr, status, _error) {
       var messageObj = JSON.parse(xhr.responseText);
-      console.log(messageObj);
       handleError(messageObj.error);
     }
   });

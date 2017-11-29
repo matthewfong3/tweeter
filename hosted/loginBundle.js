@@ -180,7 +180,6 @@ var sendAjax = function sendAjax(type, action, data, success) {
     success: success,
     error: function error(xhr, status, _error) {
       var messageObj = JSON.parse(xhr.responseText);
-      console.log(messageObj);
       handleError(messageObj.error);
     }
   });
