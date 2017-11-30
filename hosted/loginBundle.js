@@ -165,22 +165,6 @@ var handleError = function handleError(message) {
   $("#errorMessage").text(message);
 };
 
-var NotFound = function NotFound(props) {
-  return React.createElement(
-    "div",
-    null,
-    React.createElement(
-      "p",
-      null,
-      "props.message"
-    )
-  );
-};
-
-var createNotFoundPage = function createNotFoundPage(message) {
-  ReactDOM.render(React.createElement(NotFound, { message: message }), document.querySelector("#content"));
-};
-
 // function that redirects the user on request success
 var redirect = function redirect(response) {
   window.location = response.redirect;

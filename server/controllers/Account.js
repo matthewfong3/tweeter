@@ -131,8 +131,8 @@ const changePassword = (req, res) => {
 };
 
 const notFound = (req, res) => {
-  console.log('not found');
-  res.status(404).sendFile(`${__dirname}/../views/notFound.handlebars`);
+  res.status(404);
+  res.render('notFound', { csrfToken: req.csrfToken() });
 };
 
 // function that sends the user back a new csrfToken

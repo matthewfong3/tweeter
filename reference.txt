@@ -3,3 +3,4 @@ unfill heart: https://image.flaticon.com/icons/png/128/126/126471.png
 fill heart: http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/heart-icon.png
 reply: https://d30y9cdsu7xlg0.cloudfront.net/png/52978-200.png
 upload image: https://d30y9cdsu7xlg0.cloudfront.net/png/3927-200.png
+sad bird image: https://i.pinimg.com/originals/8f/2c/b4/8f2cb44d3df275ae4c8af461f857d83e.png

@@ -183,19 +183,19 @@ var ChangePasswordWindow = function ChangePasswordWindow(props) {
         { htmlFor: "oldPass" },
         "Old password: "
       ),
-      React.createElement("input", { id: "oldPass", type: "password", name: "oldPass" }),
+      React.createElement("input", { id: "oldPass", type: "password", name: "oldPass", placeholder: "old password" }),
       React.createElement(
         "label",
         { htmlFor: "newPass1" },
         "New password:"
       ),
-      React.createElement("input", { id: "newPass1", type: "password", name: "newPass1" }),
+      React.createElement("input", { id: "newPass1", type: "password", name: "newPass1", placeholder: "new password" }),
       React.createElement(
         "label",
         { htmlFor: "newPass2" },
         "Retype password:"
       ),
-      React.createElement("input", { id: "newPass2", type: "password", name: "newPass2" }),
+      React.createElement("input", { id: "newPass2", type: "password", name: "newPass2", placeholder: "retype password" }),
       React.createElement("input", { type: "hidden", name: "_csrf", value: props.csrf }),
       React.createElement("input", { className: "formSubmit", type: "submit", value: "Submit" })
     )
@@ -559,22 +559,6 @@ $(document).ready(function () {
 // function that handles error messages from the server
 var handleError = function handleError(message) {
   $("#errorMessage").text(message);
-};
-
-var NotFound = function NotFound(props) {
-  return React.createElement(
-    "div",
-    null,
-    React.createElement(
-      "p",
-      null,
-      "props.message"
-    )
-  );
-};
-
-var createNotFoundPage = function createNotFoundPage(message) {
-  ReactDOM.render(React.createElement(NotFound, { message: message }), document.querySelector("#content"));
 };
 
 // function that redirects the user on request success

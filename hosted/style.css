@@ -56,6 +56,21 @@ nav {
   padding: 20px;
 }
 
+#errContent {
+  background-color: rgb(245, 248, 250);
+  width: 30%;
+  margin: 0 auto;
+  margin-top: 50px;
+  margin-bottom: 50px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 20px;
+}
+
+#errContent h3 {
+  margin-top: 0;
+}
+
 #content h1, #passwordDiv h1 {
   text-align: center;
 }
@@ -97,8 +112,8 @@ nav {
     color: white;
     text-decoration: none;
 }
+.formSubmit :link, .formSubmit:visited, .formSubmit:hover, .formSubmit:active {
 
-.formSubmit:link, .formSubmit:visited, .formSubmit:hover, .formSubmit:active {
     color: white;
 }
 
@@ -107,14 +122,14 @@ nav {
     background-color: #338acc;
 }
 
-.username, #displayname, #password, #password2 {
+.username, #displayname, #password, #password2, #oldPass, #newPass1, #newPass2 {
     text-align: center;
     font-size: 1.1em;
     width: 180px;
     border-radius: 4px;
 }
 
-.username:focus, #displayname:focus, #password:focus, #password2:focus {
+.username:focus, #displayname:focus, #password:focus, #password2:focus, #oldPass:focus, #newPass1:focus, #newPass2:focus {
     outline: none;
     box-shadow: 0px 0px 1px 1px #55acee;
 }

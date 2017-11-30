@@ -168,11 +168,11 @@ const ChangePasswordWindow = (props) => {
       >
         <h1>Tweeter</h1>
         <label htmlFor="oldPass">Old password: </label>
-        <input id="oldPass" type="password" name="oldPass"></input>
+        <input id="oldPass" type="password" name="oldPass" placeholder="old password"></input>
         <label htmlFor="newPass1">New password:</label>
-        <input id="newPass1" type="password" name="newPass1"></input>
+        <input id="newPass1" type="password" name="newPass1" placeholder="new password"></input>
         <label htmlFor="newPass2">Retype password:</label>
-        <input id="newPass2" type="password" name="newPass2"/>
+        <input id="newPass2" type="password" name="newPass2" placeholder="retype password"/>
         <input type="hidden" name="_csrf" value={props.csrf}/>
         <input className="formSubmit" type="submit" value="Submit"/>
       </form>

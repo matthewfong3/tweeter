@@ -3,20 +3,6 @@ const handleError = (message) => {
   $("#errorMessage").text(message);
 };
 
-const NotFound = (props) => {
-  return(
-    <div>
-      <p>props.message</p>
-    </div>
-  );
-};
-
-const createNotFoundPage = (message) => {
-  ReactDOM.render(
-    <NotFound message={message} />, document.querySelector("#content")
-  );
-};
-
 // function that redirects the user on request success
 const redirect = (response) => {
   window.location = response.redirect;

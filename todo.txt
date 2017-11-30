@@ -3,10 +3,9 @@
 -like/favorite a tweet (each account can only fav a tweet once)
 -reply/comment section for a tweet (song example from react-fsc)
 -show/hide replies toggle, dont have to always click shows replies button to view replies
-~404 not found page
+-404 not found page
 -CSS 
 -Comment and -refactor code (no globals)	
-dark theme (css html thing?)
 -button -> dropdown to edit/delete tweet
 -change tweet form to show unchanged tweet if user does not change tweet after all
 -displayOptions (global)
@@ -15,5 +14,6 @@ dark theme (css html thing?)
 	-removeDeleteOpts
 	-MakeOptions
 	-renderOptions
+-dark theme (css html thing?)
 documentation
 refactor code (callback hell?)
