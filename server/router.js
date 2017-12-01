@@ -8,7 +8,6 @@ const router = (app) => {
   app.post('/login', mid.requiresSecure, mid.requiresLogout, controllers.Account.login);
   app.post('/signup', mid.requiresSecure, mid.requiresLogout, controllers.Account.signup);
   app.get('/logout', mid.requiresLogin, controllers.Account.logout);
-  // app.get('/passChange', mid.requiresLogin, controllers.Account.change);
   app.post('/passChange', mid.requiresLogin, controllers.Account.change);
   app.post('/favTweet', mid.requiresLogin, controllers.Tweet.fav);
   app.post('/reply', mid.requiresLogin, controllers.Tweet.reply);
