@@ -105,6 +105,8 @@ const setup = (csrf) => {
   const loginButton = document.querySelector("#loginButton");
   const signupButton = document.querySelector("#signupButton");
   
+  toggleDarkMode();
+  
   signupButton.addEventListener("click", (e) => {
     e.preventDefault();
     createSignupWindow(csrf);

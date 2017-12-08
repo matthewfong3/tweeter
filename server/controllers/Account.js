@@ -64,6 +64,8 @@ const signup = (request, response) => {
     const accountData = {
       username: req.body.username,
       displayname: req.body.displayname,
+      followers: 0,
+      following: 0,
       salt,
       password: hash,
     };
@@ -135,6 +137,72 @@ const notFound = (req, res) => {
   res.render('notFound', { csrfToken: req.csrfToken() });
 };
 
+const searchAccount = (req, res) =>
+  // search for another account using displayname
+  Account.AccountModel.searchDisplayName(req.body.search, (err, doc) => {
+    if (err) {
+      console.log(err);
+      return res.status(400).json({ error: 'An error occurred' });
+    }
+    return res.json({ user: doc.displayname });
+  });
+
+const follow = (req, res) =>
+  // find searched account in db and increment followers count
+  // use req.body.displayname
+   Account.AccountModel.searchDisplayName(req.body.displayname, (err, doc) => {
+     if (err) {
+       console.log(err);
+       return res.status(400).json({ error: 'An error occurred' });
+     }
+
+     const changedDoc = doc;
+     changedDoc.followers++;
+
+     const accountPromise = doc.save();
+
+     accountPromise.then(() =>
+      // find requester's account in db and increment following count
+      // use req.session.account._id
+       Account.AccountModel.searchIdForFollow(req.session.account._id, (err2, doc2) => {
+         if (err2) {
+           console.log(err2);
+           return res.status(400).json({ error: 'An error occurred' });
+         }
+
+         const changedDoc2 = doc2;
+         changedDoc2.following++;
+
+         const accountPromise2 = doc2.save();
+
+         accountPromise2.then(() => res.json({ redirect: '/maker' }));
+
+         accountPromise2.catch((error2) => {
+           console.log(error2);
+           return res.status(400).json({ error2 });
+         });
+
+         return accountPromise2;
+       }));
+
+     accountPromise.catch((error) => {
+       console.log(error);
+       return res.status(400).json({ error });
+     });
+
+     return accountPromise;
+   });
+
+const getProfile = (req, res) =>
+  // find requester's account in db and return the doc
+   Account.AccountModel.searchIdForFollow(req.session.account._id, (err, doc) => {
+     if (err) {
+       console.log(err);
+       return res.status(400).json({ error: 'An error occurred' });
+     }
+     return res.json(doc);
+   });
+
 // function that sends the user back a new csrfToken
 const getToken = (request, response) => {
   const req = request;
@@ -154,3 +222,6 @@ module.exports.signup = signup;
 module.exports.change = changePassword;
 module.exports.getToken = getToken;
 module.exports.notFound = notFound;
+module.exports.search = searchAccount;
+module.exports.follow = follow;
+module.exports.getProfile = getProfile;

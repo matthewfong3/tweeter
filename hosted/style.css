@@ -46,6 +46,17 @@ nav {
     background-color: #66bdff;
 }
 
+#darkModeDiv {
+  float: right;
+  margin-right: 5px;
+  margin-top: 10px;
+}
+
+#darkModeCheckBox {
+  vertical-align: middle;
+  margin: 0;
+}
+
 #content, #passwordDiv {
   background-color: rgb(245, 248, 250);
   width: 30%;
@@ -134,6 +145,23 @@ nav {
     box-shadow: 0px 0px 1px 1px #55acee;
 }
 
+#profile{
+  margin-top: 10px;
+  margin-left: 20px;
+  float: left;
+  width: 30%;
+  height: 300px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: white;
+}
+
+#displayname{
+  text-align: center;
+  margin: 0 auto;
+  margin-top: 10px;
+}
+
 .ads{
   text-align: center;
   width: 30%;
@@ -179,6 +207,10 @@ nav {
   margin-top: 10px;
 }
 
+#searchAccountsForm {
+  padding: 10px;
+}
+
 #uploadImage {
   margin-bottom: 7px;
 }
@@ -209,7 +241,7 @@ nav {
   margin: 0 auto;
 }
 
-.makeTweetSubmit, .changeTweetSubmit, .replyTweetSubmit {
+.makeTweetSubmit, .changeTweetSubmit, .replyTweetSubmit, .searchSubmit, .followSubmit {
   font-size: 1.3em;
   color: white;
   text-decoration: none;
@@ -218,14 +250,19 @@ nav {
   background-color: #55acee;
 }
 
-.makeTweetSubmit:hover, .changeTweetSubmit:hover, .changeTweet:hover, .deleteTweet:hover, .delYes:hover, .delNo:hover, .replyTweetSubmit:hover {
+.makeTweetSubmit:hover, .changeTweetSubmit:hover, .changeTweet:hover, .deleteTweet:hover, .delYes:hover, .delNo:hover, .replyTweetSubmit:hover, .searchSubmit:hover, .followSubmit:hover {
   transition: background-color 0.8s ease;
   background-color: #66bdff;
 }
 
-#tweetMessage, #imageInput, #replyMessage, #changeTweetMessage {
+#tweetMessage, #imageInput, #replyMessage, #changeTweetMessage, #searchName {
   border-radius: 4px;
   padding: 5px;
+}
+
+#searchResult {
+  margin: 0 auto;
+  text-align: center;
 }
 
 #imageInput, #replyMessage {
@@ -304,6 +341,7 @@ hr {
 
 .replies {
   margin-top: 10px;
+  border-radius: 5px;
 }
 
 .replyDiv {
@@ -324,4 +362,8 @@ hr {
 
 .viewReplies {
   float:right;
+}
+
+#profileStats {
+  text-align: center;
 }

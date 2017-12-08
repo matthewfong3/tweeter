@@ -116,6 +116,32 @@ var handleFav = function handleFav(csrf, tweetId) {
   }
   favButton.dataset.faved = "true";
 };
+
+var handleSearch = function handleSearch(e) {
+  e.preventDefault();
+
+  if ($("#searchName").val() == '') {
+    handleError('Field is required');
+    return false;
+  }
+
+  sendAjax('POST', $("#searchAccountsForm").attr("action"), $("#searchAccountsForm").serialize(), function (data) {
+    sendAjax('GET', '/getToken', null, function (result) {
+      loadSearchAccount(result.csrfToken, data);
+    });
+  });
+};
+
+var handleFollow = function handleFollow(e) {
+  e.preventDefault();
+  console.log($("#followAccountsForm").serialize());
+  sendAjax('POST', $("#followAccountsForm").attr("action"), $("#followAccountsForm").serialize(), function () {
+    console.log('success');
+    sendAjax('GET', '/getToken', null, function (result) {
+      loadProfileFromServer(result.csrfToken);
+    });
+  });
+};
 //endregion
 
 // - Tweet related-functions - region
@@ -519,6 +545,41 @@ var TweetList = function TweetList(props) {
   );
 };
 
+var LoadProfile = function LoadProfile(props) {
+  return React.createElement(
+    "div",
+    null,
+    React.createElement(
+      "form",
+      { id: "searchAccountsForm",
+        onSubmit: handleSearch,
+        name: "searchAccounts",
+        action: "/search",
+        method: "POST",
+        className: "searchAccounts"
+      },
+      React.createElement("input", { id: "searchName", type: "text", name: "search", placeholder: "Search for a user" }),
+      React.createElement("input", { type: "hidden", name: "_csrf", value: props.csrf }),
+      React.createElement("input", { className: "searchSubmit", type: "submit", value: "Search" })
+    ),
+    React.createElement("div", { id: "searchResult" }),
+    React.createElement("hr", null),
+    React.createElement(
+      "h2",
+      { id: "displayname" },
+      props.displayname
+    ),
+    React.createElement(
+      "h4",
+      { id: "profileStats" },
+      "Followers: ",
+      props.followers,
+      " | Following: ",
+      props.following
+    )
+  );
+};
+
 // function that renders the 'tweet list' feed onto the page
 var loadTweetsFromServer = function loadTweetsFromServer(csrf) {
   sendAjax('GET', '/getTweets', null, function (data) {
@@ -527,9 +588,45 @@ var loadTweetsFromServer = function loadTweetsFromServer(csrf) {
 };
 //endregion
 
+var loadSearchAccount = function loadSearchAccount(csrf, data) {
+  sendAjax('GET', '/getTweets', null, function () {
+    ReactDOM.render(React.createElement(
+      "div",
+      null,
+      React.createElement(
+        "form",
+        { id: "followAccountsForm",
+          onSubmit: handleFollow,
+          name: "followAccounts",
+          action: "/follow",
+          method: "POST",
+          className: "followAccounts"
+        },
+        React.createElement(
+          "span",
+          null,
+          data.user
+        ),
+        React.createElement("input", { type: "hidden", name: "displayname", value: data.user }),
+        React.createElement("input", { type: "hidden", name: "_csrf", value: csrf }),
+        React.createElement("input", { className: "followSubmit", type: "submit", value: "Follow" })
+      )
+    ), document.querySelector("#searchResult"));
+  });
+};
+
+var loadProfileFromServer = function loadProfileFromServer(csrf) {
+  sendAjax('GET', '/getProfile', null, function (data) {
+    console.log(data);
+    ReactDOM.render(React.createElement(LoadProfile, { csrf: csrf, displayname: data.displayname, followers: data.followers, following: data.following }), document.querySelector("#profile"));
+  });
+};
+
 // function that sets up page initially
 var setup = function setup(csrf) {
   var changePasswordButton = document.querySelector("#changePassButton");
+
+  toggleDarkMode();
 
   changePasswordButton.addEventListener("click", function (e) {
     e.preventDefault();
@@ -542,6 +639,7 @@ var setup = function setup(csrf) {
   ReactDOM.render(React.createElement(TweetList, { tweets: [], csrf: csrf }), document.querySelector("#tweets"));
 
   loadTweetsFromServer(csrf);
+  loadProfileFromServer(csrf);
 };
 
 // function that makes a request to the server to get a new token for the user
@@ -578,6 +676,111 @@ var sendAjax = function sendAjax(type, action, data, success) {
     error: function error(xhr, status, _error) {
       var messageObj = JSON.parse(xhr.responseText);
       handleError(messageObj.error);
+    }
+  });
+};
+
+var toggleDarkMode = function toggleDarkMode() {
+  var checkbox = document.querySelector("#darkModeCheckBox");
+  var body = document.body;
+  var nav = document.querySelector("#nav");
+
+  // login only
+  var content = document.querySelector("#content");
+
+  // app only
+  var passwordDiv = document.querySelector("#passwordDiv");
+  var tweetFormDiv = document.querySelector("#tweetFormDiv");
+  var tweets = document.getElementsByClassName('tweet');
+  var emptyTweet = document.getElementsByClassName('emptyTweet');
+  var replies = document.getElementsByClassName('replyDiv');
+  var viewReplies = document.getElementsByClassName('viewReplies');
+
+  // notFound only
+  var errContent = document.querySelector("#errContent");
+
+  checkbox.addEventListener('change', function () {
+    if (checkbox.checked) {
+      body.style.backgroundColor = "rgb(20,29,38)";
+      body.style.color = "white";
+      nav.style.backgroundColor = "rgb(36,52,71)";
+
+      if (content) {
+        content.style.backgroundColor = "rgb(27,40,54)";
+      }
+
+      if (passwordDiv) {
+        passwordDiv.style.backgroundColor = "rgb(27,40,54)";
+      }
+
+      if (tweetFormDiv) {
+        tweetFormDiv.style.backgroundColor = "rgb(27,52, 72)";
+      }
+
+      if (emptyTweet) {
+        for (var i = 0; i < emptyTweet.length; i++) {
+          emptyTweet[i].style.backgroundColor = "rgb(36,52,71)";
+        }
+      }
+
+      if (tweets) {
+        for (var _i = 0; _i < tweets.length; _i++) {
+          tweets[_i].style.backgroundColor = "rgb(36,52,71)";
+        }
+      }
+
+      if (replies) {
+        for (var _i2 = 0; _i2 < replies.length; _i2++) {
+          replies[_i2].style.backgroundColor = "rgb(27,40,54)";
+        }
+      }
+
+      /*if(viewReplies){
+        for(let i = 0; i < viewReplies.length; i++)
+          viewReplies[i].style.
+      }*/
+
+      if (errContent) {
+        errContent.style.backgroundColor = "rgb(36,52,71)";
+      }
+    } else {
+      body.style.backgroundColor = "rgb(230, 236, 240)";
+      body.style.color = "black";
+      nav.style.backgroundColor = "white";
+
+      if (content) {
+        content.style.backgroundColor = "rgb(245, 248, 250)";
+      }
+
+      if (passwordDiv) {
+        passwordDiv.style.backgroundColor = "rgb(245, 248, 250)";
+      }
+
+      if (tweetFormDiv) {
+        tweetFormDiv.style.backgroundColor = "rgb(232, 245, 253)";
+      }
+
+      if (emptyTweet) {
+        for (var _i3 = 0; _i3 < emptyTweet.length; _i3++) {
+          emptyTweet[_i3].style.backgroundColor = "white";
+        }
+      }
+
+      if (tweets) {
+        for (var _i4 = 0; _i4 < tweets.length; _i4++) {
+          tweets[_i4].style.backgroundColor = "white";
+        }
+      }
+
+      if (replies) {
+        for (var _i5 = 0; _i5 < replies.length; _i5++) {
+          replies[_i5].style.backgroundColor = "rgb(217, 235, 253)";
+        }
+      }
+
+      if (errContent) {
+        errContent.style.backgroundColor = "rgb(245, 248, 250)";
+      }
     }
   });
 };

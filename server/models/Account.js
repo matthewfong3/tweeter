@@ -23,6 +23,12 @@ const AccountSchema = new mongoose.Schema({
     trim: true,
     unique: true,
   },
+  followers: {
+    type: Number,
+  },
+  following: {
+    type: Number,
+  },
   salt: {
     type: Buffer,
     required: true,
@@ -110,6 +116,20 @@ AccountSchema.statics.findById = (ownerId, oldPass, callback) => {
       return callback(null, null);
     });
   });
+};
+
+AccountSchema.statics.searchDisplayName = (displayname, callback) => {
+  const search = {
+    displayname,
+  };
+  return AccountModel.findOne(search, callback);
+};
+
+AccountSchema.statics.searchIdForFollow = (ownerId, callback) => {
+  const search = {
+    _id: convertId(ownerId),
+  };
+  return AccountModel.findOne(search, callback);
 };
 
 AccountModel = mongoose.model('Account', AccountSchema);

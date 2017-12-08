@@ -114,6 +114,33 @@ const handleFav = (csrf, tweetId) => {
   } 
   favButton.dataset.faved = "true";
 };
+
+const handleSearch = (e) => {
+  e.preventDefault();
+  
+  
+  if($("#searchName").val() == ''){
+    handleError('Field is required');
+    return false;
+  }
+  
+  sendAjax('POST', $("#searchAccountsForm").attr("action"), $("#searchAccountsForm").serialize(), (data) => {
+    sendAjax('GET', '/getToken', null, (result) => {
+      loadSearchAccount(result.csrfToken, data);
+    });
+  });
+};
+
+const handleFollow = (e) => {
+  e.preventDefault();
+  console.log($("#followAccountsForm").serialize());
+  sendAjax('POST', $("#followAccountsForm").attr("action"), $("#followAccountsForm").serialize(), () => {
+    console.log('success');
+    sendAjax('GET', '/getToken', null, (result) => {
+      loadProfileFromServer(result.csrfToken);
+    });
+  });
+};
 //endregion
 
 // - Tweet related-functions - region
@@ -442,6 +469,28 @@ const TweetList = (props) => {
   );
 };
 
+const LoadProfile = (props) => {
+  return(
+    <div>
+      <form id="searchAccountsForm"
+        onSubmit={handleSearch}
+        name="searchAccounts"
+        action="/search"
+        method="POST"
+        className="searchAccounts"
+      >
+        <input id="searchName" type="text" name="search" placeholder="Search for a user"/>
+        <input type="hidden" name="_csrf" value={props.csrf}/>
+        <input className="searchSubmit" type="submit" value="Search"/>
+      </form>
+      <div id="searchResult"></div>
+      <hr></hr>
+      <h2 id="displayname">{props.displayname}</h2>
+      <h4 id="profileStats">Followers: {props.followers} | Following: {props.following}</h4>
+    </div>
+  );
+};
+
 // function that renders the 'tweet list' feed onto the page
 const loadTweetsFromServer = (csrf) => {
   sendAjax('GET', '/getTweets', null, (data) => {
@@ -452,9 +501,43 @@ const loadTweetsFromServer = (csrf) => {
 };
 //endregion
 
+const loadSearchAccount = (csrf, data) => {
+  sendAjax('GET', '/getTweets', null, () => { 
+    ReactDOM.render(
+      <div>
+          <form id="followAccountsForm"
+          onSubmit={handleFollow}
+          name="followAccounts"
+          action="/follow"
+          method="POST"
+          className="followAccounts"
+          >
+          <span>{data.user}</span>
+          <input type="hidden" name="displayname" value={data.user}/>
+          <input type="hidden" name="_csrf" value={csrf}/>
+          <input className="followSubmit" type="submit" value="Follow"/>
+        </form>
+      </div>,
+      document.querySelector("#searchResult")
+    );
+  });
+};
+
+const loadProfileFromServer = (csrf) => {
+  sendAjax('GET', '/getProfile', null, (data) => {
+    console.log(data);
+    ReactDOM.render(
+      <LoadProfile csrf={csrf} displayname={data.displayname} followers={data.followers} following={data.following}/>, 
+      document.querySelector("#profile")
+    );
+  });
+};
+
 // function that sets up page initially
 const setup = function(csrf){
   const changePasswordButton = document.querySelector("#changePassButton");
+  
+  toggleDarkMode();
 
   changePasswordButton.addEventListener("click", (e) => {
     e.preventDefault();
@@ -471,6 +554,7 @@ const setup = function(csrf){
   );
   
   loadTweetsFromServer(csrf);
+  loadProfileFromServer(csrf);
 };
 
 // function that makes a request to the server to get a new token for the user
