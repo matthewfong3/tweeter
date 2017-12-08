@@ -64,8 +64,8 @@ const signup = (request, response) => {
     const accountData = {
       username: req.body.username,
       displayname: req.body.displayname,
-      followers: 0,
-      following: 0,
+      followers: [],
+      following: [],
       salt,
       password: hash,
     };
@@ -144,24 +144,44 @@ const searchAccount = (req, res) =>
       console.log(err);
       return res.status(400).json({ error: 'An error occurred' });
     }
+    if (!doc) {
+      return res.status(400).json({ error: 'Account cannot be found' });
+    }
     return res.json({ user: doc.displayname });
   });
 
-const follow = (req, res) =>
+const follow = (request, response) => {
+  const req = request;
+  const res = response;
   // find searched account in db and increment followers count
   // use req.body.displayname
-   Account.AccountModel.searchDisplayName(req.body.displayname, (err, doc) => {
-     if (err) {
-       console.log(err);
-       return res.status(400).json({ error: 'An error occurred' });
-     }
+  Account.AccountModel.searchDisplayName(req.body.displayname, (err, doc) => {
+    if (err) {
+      console.log(err);
+      return res.status(400).json({ error: 'An error occurred' });
+    }
 
-     const changedDoc = doc;
-     changedDoc.followers++;
+    if (req.body.displayname === req.session.account.displayname) {
+      return res.status(400).json({ error: 'Cannot follow own account' });
+    }
 
-     const accountPromise = doc.save();
+    if (doc.followers.length === 0) {
+      const changedDoc = doc;
+      changedDoc.followers.push(req.session.account.displayname);
+    } else {
+      for (let i = 0; i < doc.followers.length; i++) {
+        if (doc.followers[i] === req.session.account.displayname) {
+          console.log(req.session.account.displayname);
+          return res.status(400).json({ error: 'Already following this account' });
+        }
+      }
+      const changedDoc = doc;
+      changedDoc.followers.push(req.session.account.displayname);
+    }
 
-     accountPromise.then(() =>
+    const accountPromise = doc.save();
+
+    accountPromise.then(() =>
       // find requester's account in db and increment following count
       // use req.session.account._id
        Account.AccountModel.searchIdForFollow(req.session.account._id, (err2, doc2) => {
@@ -171,11 +191,14 @@ const follow = (req, res) =>
          }
 
          const changedDoc2 = doc2;
-         changedDoc2.following++;
+         changedDoc2.following.push(req.body.displayname);
 
          const accountPromise2 = doc2.save();
 
-         accountPromise2.then(() => res.json({ redirect: '/maker' }));
+         accountPromise2.then(() => {
+           req.session.account = Account.AccountModel.toAPI(doc2);
+           res.json({ redirect: '/maker' });
+         });
 
          accountPromise2.catch((error2) => {
            console.log(error2);
@@ -185,13 +208,14 @@ const follow = (req, res) =>
          return accountPromise2;
        }));
 
-     accountPromise.catch((error) => {
-       console.log(error);
-       return res.status(400).json({ error });
-     });
+    accountPromise.catch((error) => {
+      console.log(error);
+      return res.status(400).json({ error });
+    });
 
-     return accountPromise;
-   });
+    return accountPromise;
+  });
+};
 
 const getProfile = (req, res) =>
   // find requester's account in db and return the doc

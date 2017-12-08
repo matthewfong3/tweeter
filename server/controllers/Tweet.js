@@ -23,7 +23,7 @@ const makeTweet = (req, res) => {
     message: req.body.message,
     displayname: req.session.account.displayname,
     owner: req.session.account._id,
-    favorites: 0,
+    favorites: [],
     comments: [],
   };
 
@@ -50,13 +50,29 @@ const makeTweet = (req, res) => {
 const getTweets = (request, response) => {
   const req = request;
   const res = response;
+  // console.log(`following: ${req.session.account.following}`);
   return Tweet.TweetModel.findAll((err, docs) => {
     if (err) {
       console.log(err);
       return res.status(400).json({ error: 'An error occurred' });
     }
 
-    return res.json({ displayname: req.session.account.displayname, tweets: docs });
+    const tweets = [];
+
+    for (let i = 0; i < docs.length; i++) {
+      if (req.session.account.displayname === docs[i].displayname) {
+        // add to return obj as well to view own tweets
+        tweets.push(docs[i]);
+      }
+      for (let j = 0; j < req.session.account.following.length; j++) {
+        if (req.session.account.following[j] === docs[i].displayname) {
+          // add to return obj
+          tweets.push(docs[i]);
+        }
+      }
+    }
+
+    return res.json({ displayname: req.session.account.displayname, tweets });
   });
 };
 
@@ -103,8 +119,18 @@ const favTweet = (req, res) => {
 
     if (!doc) return res.status(400).json({ error: 'No tweet found' });
 
-    const changedTweet = doc;
-    changedTweet.favorites++;
+    if (doc.favorites.length === 0) {
+      const changedTweet = doc;
+      changedTweet.favorites.push(req.session.account.displayname);
+    } else {
+      for (let i = 0; i < doc.favorites.length; i++) {
+        if (doc.favorites[i] === req.session.account.displayname) {
+          return res.status(400).json({ error: "Can't favorite same tweet again" });
+        }
+      }
+      const changedTweet = doc;
+      changedTweet.favorites.push(req.session.account.displayname);
+    }
 
     const tweetPromise = doc.save();
     tweetPromise.then(() => res.json({ redirect: '/maker' }));

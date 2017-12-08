@@ -133,9 +133,7 @@ const handleSearch = (e) => {
 
 const handleFollow = (e) => {
   e.preventDefault();
-  console.log($("#followAccountsForm").serialize());
   sendAjax('POST', $("#followAccountsForm").attr("action"), $("#followAccountsForm").serialize(), () => {
-    console.log('success');
     sendAjax('GET', '/getToken', null, (result) => {
       loadProfileFromServer(result.csrfToken);
     });
@@ -433,7 +431,7 @@ const TweetList = (props) => {
     
     // save the replies to be rendered later onto the page
     let replies = MakeReplies(tweet);
-    
+  
     return(
       <div key={tweet._id} className="tweet" >
         {props.displayname == tweet.displayname &&
@@ -449,8 +447,8 @@ const TweetList = (props) => {
         <div>
           <img id={replyId} className="replyButton" src="/assets/img/reply.png" width="17" height="17" alt="reply button" onClick={() => renderReplyDiv(csrf, tweet._id, replyDivId)} />
           <img id={favId} className="favButton" src="/assets/img/heart.png" width="17" height="17" alt="favorite tweet" data-faved="false" onClick={() => handleFav(csrf, tweet._id)}/>
-          {tweet.favorites > 0 &&
-            <span> {tweet.favorites} </span>
+          {tweet.favorites.length > 0 &&
+            <span> {tweet.favorites.length} </span>
           }
           <a href="#" id={repliesLinkId} className="viewReplies" onClick={(e) => renderReplies(e, repliesLinkId, repliesId)}>Hide replies</a>
         </div>
@@ -470,6 +468,7 @@ const TweetList = (props) => {
 };
 
 const LoadProfile = (props) => {
+  //console.log(props.following);
   return(
     <div>
       <form id="searchAccountsForm"
@@ -486,7 +485,7 @@ const LoadProfile = (props) => {
       <div id="searchResult"></div>
       <hr></hr>
       <h2 id="displayname">{props.displayname}</h2>
-      <h4 id="profileStats">Followers: {props.followers} | Following: {props.following}</h4>
+      <h4 id="profileStats">Followers: {props.followers.length} | Following: {props.following.length}</h4>
     </div>
   );
 };
@@ -525,7 +524,6 @@ const loadSearchAccount = (csrf, data) => {
 
 const loadProfileFromServer = (csrf) => {
   sendAjax('GET', '/getProfile', null, (data) => {
-    console.log(data);
     ReactDOM.render(
       <LoadProfile csrf={csrf} displayname={data.displayname} followers={data.followers} following={data.following}/>, 
       document.querySelector("#profile")

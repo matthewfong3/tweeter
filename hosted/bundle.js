@@ -134,9 +134,7 @@ var handleSearch = function handleSearch(e) {
 
 var handleFollow = function handleFollow(e) {
   e.preventDefault();
-  console.log($("#followAccountsForm").serialize());
   sendAjax('POST', $("#followAccountsForm").attr("action"), $("#followAccountsForm").serialize(), function () {
-    console.log('success');
     sendAjax('GET', '/getToken', null, function (result) {
       loadProfileFromServer(result.csrfToken);
     });
@@ -514,11 +512,11 @@ var TweetList = function TweetList(props) {
         React.createElement("img", { id: favId, className: "favButton", src: "/assets/img/heart.png", width: "17", height: "17", alt: "favorite tweet", "data-faved": "false", onClick: function onClick() {
             return handleFav(csrf, tweet._id);
           } }),
-        tweet.favorites > 0 && React.createElement(
+        tweet.favorites.length > 0 && React.createElement(
           "span",
           null,
           " ",
-          tweet.favorites,
+          tweet.favorites.length,
           " "
         ),
         React.createElement(
@@ -546,6 +544,7 @@ var TweetList = function TweetList(props) {
 };
 
 var LoadProfile = function LoadProfile(props) {
+  //console.log(props.following);
   return React.createElement(
     "div",
     null,
@@ -573,9 +572,9 @@ var LoadProfile = function LoadProfile(props) {
       "h4",
       { id: "profileStats" },
       "Followers: ",
-      props.followers,
+      props.followers.length,
       " | Following: ",
-      props.following
+      props.following.length
     )
   );
 };
@@ -617,7 +616,6 @@ var loadSearchAccount = function loadSearchAccount(csrf, data) {
 
 var loadProfileFromServer = function loadProfileFromServer(csrf) {
   sendAjax('GET', '/getProfile', null, function (data) {
-    console.log(data);
     ReactDOM.render(React.createElement(LoadProfile, { csrf: csrf, displayname: data.displayname, followers: data.followers, following: data.following }), document.querySelector("#profile"));
   });
 };

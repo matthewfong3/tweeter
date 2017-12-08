@@ -27,7 +27,7 @@ const TweetSchema = new mongoose.Schema({
   },
 
   favorites: {
-    type: Number,
+    type: Array,
   },
 
   comments: {
@@ -45,10 +45,8 @@ TweetSchema.statics.toAPI = (doc) => ({
 });
 
 // function that finds all tweets in db
-TweetSchema.statics.findAll = (callback) => {
-  TweetModel.find({})
-    .select('displayname message createdDate imgData favorites comments').exec(callback);
-};
+TweetSchema.statics.findAll = (callback) => TweetModel.find({})
+  .select('displayname message createdDate imgData favorites comments').exec(callback);
 
 // function that finds tweets only specific to owner
 TweetSchema.statics.findByOwner = (ownerId, callback) => {

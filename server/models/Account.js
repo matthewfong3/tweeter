@@ -24,10 +24,10 @@ const AccountSchema = new mongoose.Schema({
     unique: true,
   },
   followers: {
-    type: Number,
+    type: Array,
   },
   following: {
-    type: Number,
+    type: Array,
   },
   salt: {
     type: Buffer,
@@ -47,6 +47,7 @@ AccountSchema.statics.toAPI = doc => ({
   username: doc.username,
   displayname: doc.displayname,
   _id: doc._id,
+  following: doc.following,
 });
 
 // function that validates incoming password
