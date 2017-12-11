@@ -11,13 +11,19 @@ var redirect = function redirect(response) {
 };
 
 // function that sends ajax requests to the server
-var sendAjax = function sendAjax(type, action, data, success) {
+var sendAjax = function sendAjax(type, action, data, processBool, success) {
+  var contentTypeVal = void 0;
+
+  if (!processBool) contentTypeVal = false;else contentTypeVal = 'application/x-www-form-urlencoded; charset=UTF-8';
+
   $.ajax({
     cache: false,
     type: type,
     url: action,
     data: data,
     dataType: "json",
+    processData: processBool,
+    contentType: contentTypeVal,
     success: success,
     error: function error(xhr, status, _error) {
       var messageObj = JSON.parse(xhr.responseText);

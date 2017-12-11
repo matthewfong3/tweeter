@@ -10,8 +10,25 @@ var handleTweet = function handleTweet(e) {
     return false;
   }
 
-  sendAjax('POST', $("#tweetForm").attr("action"), $("#tweetForm").serialize(), function () {
-    sendAjax('GET', '/getToken', null, function (result) {
+  var formData = new FormData();
+  var file_data = $("#upload")[0].files;
+  for (var i = 0; i < file_data.length; i++) {
+    formData.append('photos', file_data[i]);
+  }
+  var oth_data = $("#tweetForm").serializeArray();
+  $.each(oth_data, function (key, input) {
+    formData.append(input.name, input.value);
+  });
+
+  console.log($("#tweetForm").serialize());
+  console.dir(formData.get('photos'));
+  console.dir(formData.get('message'));
+  console.dir(formData.get('_csrf'));
+
+  var url = $("#tweetForm").attr("action") + "?_csrf=" + formData.get('_csrf');
+
+  sendAjax('POST', url, formData, false, function () {
+    sendAjax('GET', '/getToken', null, true, function (result) {
       loadTweetsFromServer(result.csrfToken);
     });
   });
@@ -37,8 +54,8 @@ var handleChange = function handleChange(e) {
     return false;
   }
 
-  sendAjax('POST', $("#changeTweetForm").attr("action"), $("#changeTweetForm").serialize(), function () {
-    sendAjax('GET', '/getToken', null, function (result) {
+  sendAjax('POST', $("#changeTweetForm").attr("action"), $("#changeTweetForm").serialize(), true, function () {
+    sendAjax('GET', '/getToken', null, true, function (result) {
       loadTweetsFromServer(result.csrfToken);
     });
   });
@@ -60,8 +77,8 @@ var handleReply = function handleReply(e) {
     return false;
   }
 
-  sendAjax('POST', $("#replyTweetForm").attr("action"), $("#replyTweetForm").serialize(), function () {
-    sendAjax('GET', '/getToken', null, function (result) {
+  sendAjax('POST', $("#replyTweetForm").attr("action"), $("#replyTweetForm").serialize(), true, function () {
+    sendAjax('GET', '/getToken', null, true, function (result) {
       loadTweetsFromServer(result.csrfToken);
     });
   });
@@ -80,7 +97,7 @@ var handlePassword = function handlePassword(e) {
     return false;
   }
 
-  sendAjax('POST', $("#passwordForm").attr("action"), $("#passwordForm").serialize(), redirect);
+  sendAjax('POST', $("#passwordForm").attr("action"), $("#passwordForm").serialize(), true, redirect);
 };
 
 // handles delete a tweet request to server
@@ -89,8 +106,8 @@ var handleDelete = function handleDelete(e, csrf, tweetId) {
 
   var queryString = "_csrf=" + csrf + "&_id=" + tweetId;
 
-  sendAjax('POST', '/delete', queryString, function () {
-    sendAjax('GET', '/getToken', null, function (result) {
+  sendAjax('POST', '/delete', queryString, true, function () {
+    sendAjax('GET', '/getToken', null, true, function (result) {
       loadTweetsFromServer(result.csrfToken);
     });
   });
@@ -108,8 +125,8 @@ var handleFav = function handleFav(csrf, tweetId) {
   var queryString = "_csrf=" + csrf + "&id=" + tweetId;
 
   if (favButton.dataset.faved === "false") {
-    sendAjax('POST', '/favTweet', queryString, function () {
-      sendAjax('GET', '/getToken', null, function (result) {
+    sendAjax('POST', '/favTweet', queryString, true, function () {
+      sendAjax('GET', '/getToken', null, true, function (result) {
         loadTweetsFromServer(result.csrfToken);
       });
     });
@@ -125,8 +142,8 @@ var handleSearch = function handleSearch(e) {
     return false;
   }
 
-  sendAjax('POST', $("#searchAccountsForm").attr("action"), $("#searchAccountsForm").serialize(), function (data) {
-    sendAjax('GET', '/getToken', null, function (result) {
+  sendAjax('POST', $("#searchAccountsForm").attr("action"), $("#searchAccountsForm").serialize(), true, function (data) {
+    sendAjax('GET', '/getToken', null, true, function (result) {
       loadSearchAccount(result.csrfToken, data);
     });
   });
@@ -134,8 +151,8 @@ var handleSearch = function handleSearch(e) {
 
 var handleFollow = function handleFollow(e) {
   e.preventDefault();
-  sendAjax('POST', $("#followAccountsForm").attr("action"), $("#followAccountsForm").serialize(), function () {
-    sendAjax('GET', '/getToken', null, function (result) {
+  sendAjax('POST', $("#followAccountsForm").attr("action"), $("#followAccountsForm").serialize(), true, function () {
+    sendAjax('GET', '/getToken', null, true, function (result) {
       loadProfileFromServer(result.csrfToken);
     });
   });
@@ -159,6 +176,7 @@ var TweetForm = function TweetForm(props) {
         enctype: "multipart/form-data"
       },
       React.createElement("input", { id: "tweetMessage", type: "text", name: "message", placeholder: "What's happening?" }),
+      React.createElement("input", { type: "file", name: "photos", id: "upload", "class": "form-control" }),
       React.createElement("input", { type: "hidden", name: "_csrf", value: props.csrf }),
       React.createElement("input", { className: "makeTweetSubmit", type: "submit", value: "Tweet" }),
       React.createElement("div", { id: "imageField" })
@@ -473,8 +491,9 @@ var TweetList = function TweetList(props) {
 
     // if an image is included in a tweet, store the data in a variable to be used
     var imgSrc = void 0;
-    if (tweet.imgData) {
-      imgSrc = tweet.imgData;
+    if (tweet.imgData[0]) {
+      console.log(tweet.imgData);
+      imgSrc = "/assets/uploads/" + tweet.imgData[0].filename;
     }
 
     // save the replies to be rendered later onto the page
@@ -581,14 +600,14 @@ var LoadProfile = function LoadProfile(props) {
 
 // function that renders the 'tweet list' feed onto the page
 var loadTweetsFromServer = function loadTweetsFromServer(csrf) {
-  sendAjax('GET', '/getTweets', null, function (data) {
+  sendAjax('GET', '/getTweets', null, true, function (data) {
     ReactDOM.render(React.createElement(TweetList, { csrf: csrf, displayname: data.displayname, tweets: data.tweets }), document.querySelector("#tweets"));
   });
 };
 //endregion
 
 var loadSearchAccount = function loadSearchAccount(csrf, data) {
-  sendAjax('GET', '/getTweets', null, function () {
+  sendAjax('GET', '/getTweets', null, true, function () {
     ReactDOM.render(React.createElement(
       "div",
       null,
@@ -615,7 +634,7 @@ var loadSearchAccount = function loadSearchAccount(csrf, data) {
 };
 
 var loadProfileFromServer = function loadProfileFromServer(csrf) {
-  sendAjax('GET', '/getProfile', null, function (data) {
+  sendAjax('GET', '/getProfile', null, true, function (data) {
     ReactDOM.render(React.createElement(LoadProfile, { csrf: csrf, displayname: data.displayname, followers: data.followers, following: data.following }), document.querySelector("#profile"));
   });
 };
@@ -642,7 +661,7 @@ var setup = function setup(csrf) {
 
 // function that makes a request to the server to get a new token for the user
 var getToken = function getToken() {
-  sendAjax('GET', '/getToken', null, function (result) {
+  sendAjax('GET', '/getToken', null, true, function (result) {
     setup(result.csrfToken);
   });
 };
@@ -663,13 +682,19 @@ var redirect = function redirect(response) {
 };
 
 // function that sends ajax requests to the server
-var sendAjax = function sendAjax(type, action, data, success) {
+var sendAjax = function sendAjax(type, action, data, processBool, success) {
+  var contentTypeVal = void 0;
+
+  if (!processBool) contentTypeVal = false;else contentTypeVal = 'application/x-www-form-urlencoded; charset=UTF-8';
+
   $.ajax({
     cache: false,
     type: type,
     url: action,
     data: data,
     dataType: "json",
+    processData: processBool,
+    contentType: contentTypeVal,
     success: success,
     error: function error(xhr, status, _error) {
       var messageObj = JSON.parse(xhr.responseText);

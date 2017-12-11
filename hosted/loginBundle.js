@@ -12,7 +12,7 @@ var handleLogin = function handleLogin(e) {
 
   console.log($("input[name=_csrf]").val());
 
-  sendAjax('POST', $("#loginForm").attr("action"), $("#loginForm").serialize(), redirect);
+  sendAjax('POST', $("#loginForm").attr("action"), $("#loginForm").serialize(), true, redirect);
 
   return false;
 };
@@ -31,7 +31,7 @@ var handleSignup = function handleSignup(e) {
     return false;
   }
 
-  sendAjax('POST', $("#signupForm").attr("action"), $("#signupForm").serialize(), redirect);
+  sendAjax('POST', $("#signupForm").attr("action"), $("#signupForm").serialize(), true, redirect);
 
   return false;
 };
@@ -152,7 +152,7 @@ var setup = function setup(csrf) {
 
 // function that makes a request to the server to get a new token for the user
 var getToken = function getToken() {
-  sendAjax('GET', '/getToken', null, function (result) {
+  sendAjax('GET', '/getToken', null, true, function (result) {
     setup(result.csrfToken);
   });
 };
@@ -173,13 +173,19 @@ var redirect = function redirect(response) {
 };
 
 // function that sends ajax requests to the server
-var sendAjax = function sendAjax(type, action, data, success) {
+var sendAjax = function sendAjax(type, action, data, processBool, success) {
+  var contentTypeVal = void 0;
+
+  if (!processBool) contentTypeVal = false;else contentTypeVal = 'application/x-www-form-urlencoded; charset=UTF-8';
+
   $.ajax({
     cache: false,
     type: type,
     url: action,
     data: data,
     dataType: "json",
+    processData: processBool,
+    contentType: contentTypeVal,
     success: success,
     error: function error(xhr, status, _error) {
       var messageObj = JSON.parse(xhr.responseText);

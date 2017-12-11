@@ -8,8 +8,26 @@ const handleTweet = (e) => {
     return false;
   }
   
-  sendAjax('POST', $("#tweetForm").attr("action"), $("#tweetForm").serialize(), () => {
-    sendAjax('GET', '/getToken', null, (result) => {
+  // source: https://stackoverflow.com/questions/21060247/send-formdata-and-string-data-together-through-jquery-ajax
+  let formData = new FormData();
+  let file_data = $("#upload")[0].files;
+  for(let i = 0; i < file_data.length; i++) {
+    formData.append('photos', file_data[i]);
+  }
+  let oth_data = $("#tweetForm").serializeArray();
+  $.each(oth_data, (key, input) => {
+    formData.append(input.name, input.value);
+  });
+  
+  //console.log($("#tweetForm").serialize());
+  //console.dir(formData.get('photos'));
+  //console.dir(formData.get('message'));
+  //console.dir(formData.get('_csrf'));
+  
+  let url = $("#tweetForm").attr("action") + "?_csrf=" + formData.get('_csrf');
+  
+  sendAjax('POST', url, formData, false, () => {
+    sendAjax('GET', '/getToken', null, true, (result) => {
       loadTweetsFromServer(result.csrfToken);
     });
   });
@@ -35,8 +53,8 @@ const handleChange = (e) => {
     return false;
   }
   
-  sendAjax('POST', $("#changeTweetForm").attr("action"), $("#changeTweetForm").serialize(), () => {
-    sendAjax('GET', '/getToken', null, (result) => {
+  sendAjax('POST', $("#changeTweetForm").attr("action"), $("#changeTweetForm").serialize(), true, () => {
+    sendAjax('GET', '/getToken', null, true, (result) => {
       loadTweetsFromServer(result.csrfToken);
     });
   });
@@ -58,8 +76,8 @@ const handleReply = (e) => {
     return false;
   }
   
-  sendAjax('POST', $("#replyTweetForm").attr("action"), $("#replyTweetForm").serialize(), () => {
-    sendAjax('GET', '/getToken', null, (result) => {
+  sendAjax('POST', $("#replyTweetForm").attr("action"), $("#replyTweetForm").serialize(), true, () => {
+    sendAjax('GET', '/getToken', null, true, (result) => {
       loadTweetsFromServer(result.csrfToken);
     });
   });
@@ -78,7 +96,7 @@ const handlePassword = (e) => {
     return false;
   }
   
-  sendAjax('POST', $("#passwordForm").attr("action"), $("#passwordForm").serialize(), redirect);
+  sendAjax('POST', $("#passwordForm").attr("action"), $("#passwordForm").serialize(), true, redirect);
 };
 
 // handles delete a tweet request to server
@@ -87,8 +105,8 @@ const handleDelete = (e, csrf, tweetId) => {
   
   let queryString = `_csrf=${csrf}&_id=${tweetId}`;
   
-  sendAjax('POST', '/delete', queryString, () => {
-    sendAjax('GET', '/getToken', null, (result) => {
+  sendAjax('POST', '/delete', queryString, true, () => {
+    sendAjax('GET', '/getToken', null, true, (result) => {
       loadTweetsFromServer(result.csrfToken);
     });
   });
@@ -106,8 +124,8 @@ const handleFav = (csrf, tweetId) => {
   let queryString = `_csrf=${csrf}&id=${tweetId}`;
 
   if(favButton.dataset.faved === "false"){
-    sendAjax('POST', '/favTweet', queryString, () => {
-      sendAjax('GET', '/getToken', null, (result) => {
+    sendAjax('POST', '/favTweet', queryString, true, () => {
+      sendAjax('GET', '/getToken', null, true, (result) => {
         loadTweetsFromServer(result.csrfToken);
       });
     }); 
@@ -124,8 +142,8 @@ const handleSearch = (e) => {
     return false;
   }
   
-  sendAjax('POST', $("#searchAccountsForm").attr("action"), $("#searchAccountsForm").serialize(), (data) => {
-    sendAjax('GET', '/getToken', null, (result) => {
+  sendAjax('POST', $("#searchAccountsForm").attr("action"), $("#searchAccountsForm").serialize(), true, (data) => {
+    sendAjax('GET', '/getToken', null, true, (result) => {
       loadSearchAccount(result.csrfToken, data);
     });
   });
@@ -133,8 +151,8 @@ const handleSearch = (e) => {
 
 const handleFollow = (e) => {
   e.preventDefault();
-  sendAjax('POST', $("#followAccountsForm").attr("action"), $("#followAccountsForm").serialize(), () => {
-    sendAjax('GET', '/getToken', null, (result) => {
+  sendAjax('POST', $("#followAccountsForm").attr("action"), $("#followAccountsForm").serialize(), true, () => {
+    sendAjax('GET', '/getToken', null, true, (result) => {
       loadProfileFromServer(result.csrfToken);
     });
   });
@@ -152,10 +170,11 @@ const TweetForm = (props) => {
         action="/maker"
         method="POST"
         className="tweetForm"
-        enctype="multipart/form-data" 
+        enctype="multipart/form-data"
       >
         <input id="tweetMessage" type="text" name="message" placeholder="What's happening?"/>
-        <input type="hidden" name="_csrf" value={props.csrf}/>
+        <input type="file" name="photos" id="upload" class="form-control"/>
+        <input type="hidden" name="_csrf" value={props.csrf} />
         <input className="makeTweetSubmit" type="submit" value="Tweet"/>
         <div id="imageField"></div>
       </form>
@@ -425,8 +444,9 @@ const TweetList = (props) => {
     
     // if an image is included in a tweet, store the data in a variable to be used
     let imgSrc;
-    if(tweet.imgData){
-      imgSrc = tweet.imgData;
+    if(tweet.imgData[0]){
+      console.log(tweet.imgData);
+      imgSrc = `/assets/uploads/${tweet.imgData[0].filename}`;
     }
     
     // save the replies to be rendered later onto the page
@@ -492,7 +512,7 @@ const LoadProfile = (props) => {
 
 // function that renders the 'tweet list' feed onto the page
 const loadTweetsFromServer = (csrf) => {
-  sendAjax('GET', '/getTweets', null, (data) => {
+  sendAjax('GET', '/getTweets', null, true, (data) => {
     ReactDOM.render(
       <TweetList csrf={csrf} displayname={data.displayname} tweets={data.tweets}/>, document.querySelector("#tweets")
     );
@@ -501,7 +521,7 @@ const loadTweetsFromServer = (csrf) => {
 //endregion
 
 const loadSearchAccount = (csrf, data) => {
-  sendAjax('GET', '/getTweets', null, () => { 
+  sendAjax('GET', '/getTweets', null, true, () => { 
     ReactDOM.render(
       <div>
           <form id="followAccountsForm"
@@ -523,7 +543,7 @@ const loadSearchAccount = (csrf, data) => {
 };
 
 const loadProfileFromServer = (csrf) => {
-  sendAjax('GET', '/getProfile', null, (data) => {
+  sendAjax('GET', '/getProfile', null, true, (data) => {
     ReactDOM.render(
       <LoadProfile csrf={csrf} displayname={data.displayname} followers={data.followers} following={data.following}/>, 
       document.querySelector("#profile")
@@ -557,7 +577,7 @@ const setup = function(csrf){
 
 // function that makes a request to the server to get a new token for the user
 const getToken = () => {
-  sendAjax('GET', '/getToken', null, (result) => {
+  sendAjax('GET', '/getToken', null, true, (result) => {
     setup(result.csrfToken);
   });
 };

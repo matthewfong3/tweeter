@@ -23,7 +23,7 @@ const TweetSchema = new mongoose.Schema({
   },
 
   imgData: {
-    type: String,
+    type: Array,
   },
 
   favorites: {

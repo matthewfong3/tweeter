@@ -9,13 +9,20 @@ const redirect = (response) => {
 };
 
 // function that sends ajax requests to the server
-const sendAjax = (type, action, data, success) => {
+const sendAjax = (type, action, data, processBool,success) => {
+  let contentTypeVal;
+  
+  if(!processBool) contentTypeVal = false;
+  else contentTypeVal = 'application/x-www-form-urlencoded; charset=UTF-8';
+  
   $.ajax({
     cache: false,
     type: type,
     url: action,
     data: data, 
     dataType: "json",
+    processData: processBool,
+    contentType: contentTypeVal,
     success: success,
     error: function(xhr, status, error){
       var messageObj = JSON.parse(xhr.responseText); 

@@ -1,5 +1,7 @@
 const controllers = require('./controllers');
 const mid = require('./middleware');
+const multer = require('multer');
+const upload = multer({ dest: 'hosted/uploads/' });
 
 const router = (app) => {
   app.get('/getToken', mid.requiresSecure, controllers.Account.getToken);
@@ -15,7 +17,8 @@ const router = (app) => {
   app.post('/follow', mid.requiresLogin, controllers.Account.follow);
   app.get('/getProfile', mid.requiresLogin, controllers.Account.getProfile);
   app.get('/maker', mid.requiresLogin, controllers.Tweet.makerPage);
-  app.post('/maker', mid.requiresLogin, controllers.Tweet.make);
+  app.post('/maker', mid.requiresLogin, upload.array('photos', 12), controllers.Tweet.make);
+  // app.post('/photos/upload', upload.array('photos', 12), controllers.Tweet.upload);
   app.post('/change', mid.requiresLogin, controllers.Tweet.change);
   app.post('/delete', mid.requiresLogin, controllers.Tweet.delete);
   app.get('/', mid.requiresSecure, mid.requiresLogout, controllers.Account.loginPage);
