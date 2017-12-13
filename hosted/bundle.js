@@ -10,20 +10,18 @@ var handleTweet = function handleTweet(e) {
     return false;
   }
 
+  // source: https://stackoverflow.com/questions/21060247/send-formdata-and-string-data-together-through-jquery-ajax
   var formData = new FormData();
-  var file_data = $("#upload")[0].files;
-  for (var i = 0; i < file_data.length; i++) {
-    formData.append('photos', file_data[i]);
+  if ($("#upload")[0]) {
+    var file_data = $("#upload")[0].files;
+    for (var i = 0; i < file_data.length; i++) {
+      formData.append('photos', file_data[i]);
+    }
   }
   var oth_data = $("#tweetForm").serializeArray();
   $.each(oth_data, function (key, input) {
     formData.append(input.name, input.value);
   });
-
-  console.log($("#tweetForm").serialize());
-  console.dir(formData.get('photos'));
-  console.dir(formData.get('message'));
-  console.dir(formData.get('_csrf'));
 
   var url = $("#tweetForm").attr("action") + "?_csrf=" + formData.get('_csrf');
 
@@ -34,7 +32,7 @@ var handleTweet = function handleTweet(e) {
   });
 
   // remove image input field if it exists
-  var imageInput = document.querySelector("#imageInput");
+  var imageInput = document.querySelector("#upload");
   if (imageInput) imageInput.parentNode.removeChild(imageInput);
 
   // change tweet placeholder text back to default
@@ -134,6 +132,7 @@ var handleFav = function handleFav(csrf, tweetId) {
   favButton.dataset.faved = "true";
 };
 
+// handles account searching to server
 var handleSearch = function handleSearch(e) {
   e.preventDefault();
 
@@ -149,6 +148,7 @@ var handleSearch = function handleSearch(e) {
   });
 };
 
+// handles follow request between accounts to server
 var handleFollow = function handleFollow(e) {
   e.preventDefault();
   sendAjax('POST', $("#followAccountsForm").attr("action"), $("#followAccountsForm").serialize(), true, function () {
@@ -176,7 +176,6 @@ var TweetForm = function TweetForm(props) {
         enctype: "multipart/form-data"
       },
       React.createElement("input", { id: "tweetMessage", type: "text", name: "message", placeholder: "What's happening?" }),
-      React.createElement("input", { type: "file", name: "photos", id: "upload", "class": "form-control" }),
       React.createElement("input", { type: "hidden", name: "_csrf", value: props.csrf }),
       React.createElement("input", { className: "makeTweetSubmit", type: "submit", value: "Tweet" }),
       React.createElement("div", { id: "imageField" })
@@ -190,10 +189,10 @@ var createImageInput = function createImageInput() {
   var imageField = document.querySelector('#imageField');
   if (imageField.childNodes.length === 0) {
     var input = document.createElement('input');
-    input.id = "imageInput";
-    input.type = "text";
-    input.name = "imgData";
-    input.placeholder = "Image link";
+    input.id = "upload";
+    input.type = "file";
+    input.name = "photos";
+    input.className = "form-control";
 
     imageField.appendChild(input);
   }
@@ -432,7 +431,7 @@ var MakeReplies = function MakeReplies(props) {
   // return list of replies
   return React.createElement(
     "div",
-    null,
+    { className: "transparentDiv" },
     replies
   );
 };
@@ -492,7 +491,6 @@ var TweetList = function TweetList(props) {
     // if an image is included in a tweet, store the data in a variable to be used
     var imgSrc = void 0;
     if (tweet.imgData[0]) {
-      console.log(tweet.imgData);
       imgSrc = "/assets/uploads/" + tweet.imgData[0].filename;
     }
 
@@ -562,8 +560,8 @@ var TweetList = function TweetList(props) {
   );
 };
 
+// function that encapsulates profile search and profile account info into one div to be rendered to page
 var LoadProfile = function LoadProfile(props) {
-  //console.log(props.following);
   return React.createElement(
     "div",
     null,
@@ -602,10 +600,12 @@ var LoadProfile = function LoadProfile(props) {
 var loadTweetsFromServer = function loadTweetsFromServer(csrf) {
   sendAjax('GET', '/getTweets', null, true, function (data) {
     ReactDOM.render(React.createElement(TweetList, { csrf: csrf, displayname: data.displayname, tweets: data.tweets }), document.querySelector("#tweets"));
+    checkDarkMode();
   });
 };
 //endregion
 
+// function that renders content for searched account result
 var loadSearchAccount = function loadSearchAccount(csrf, data) {
   sendAjax('GET', '/getTweets', null, true, function () {
     ReactDOM.render(React.createElement(
@@ -633,6 +633,7 @@ var loadSearchAccount = function loadSearchAccount(csrf, data) {
   });
 };
 
+// function that renders personal account's profile onto the page
 var loadProfileFromServer = function loadProfileFromServer(csrf) {
   sendAjax('GET', '/getProfile', null, true, function (data) {
     ReactDOM.render(React.createElement(LoadProfile, { csrf: csrf, displayname: data.displayname, followers: data.followers, following: data.following }), document.querySelector("#profile"));
@@ -703,6 +704,7 @@ var sendAjax = function sendAjax(type, action, data, processBool, success) {
   });
 };
 
+// helper function that toggles on/off dark/night mode view
 var toggleDarkMode = function toggleDarkMode() {
   var checkbox = document.querySelector("#darkModeCheckBox");
   var body = document.body;
@@ -717,7 +719,7 @@ var toggleDarkMode = function toggleDarkMode() {
   var tweets = document.getElementsByClassName('tweet');
   var emptyTweet = document.getElementsByClassName('emptyTweet');
   var replies = document.getElementsByClassName('replyDiv');
-  var viewReplies = document.getElementsByClassName('viewReplies');
+  var profile = document.querySelector("#profile");
 
   // notFound only
   var errContent = document.querySelector("#errContent");
@@ -758,10 +760,9 @@ var toggleDarkMode = function toggleDarkMode() {
         }
       }
 
-      /*if(viewReplies){
-        for(let i = 0; i < viewReplies.length; i++)
-          viewReplies[i].style.
-      }*/
+      if (profile) {
+        profile.style.backgroundColor = "rgb(36,52,71)";
+      }
 
       if (errContent) {
         errContent.style.backgroundColor = "rgb(36,52,71)";
@@ -801,9 +802,68 @@ var toggleDarkMode = function toggleDarkMode() {
         }
       }
 
+      if (profile) {
+        profile.style.backgroundColor = "white";
+      }
+
       if (errContent) {
         errContent.style.backgroundColor = "rgb(245, 248, 250)";
       }
     }
   });
+};
+
+// helper function that re-renders appropriate content depending on dark/light mode being active
+var checkDarkMode = function checkDarkMode() {
+  var checkbox = document.querySelector("#darkModeCheckBox");
+  var emptyTweet = document.getElementsByClassName('emptyTweet');
+  var tweets = document.getElementsByClassName('tweet');
+  var replies = document.getElementsByClassName('replyDiv');
+  var transparentDivs = document.getElementsByClassName('transparentDiv');
+
+  if (checkbox.checked) {
+    // dark mode active
+    if (emptyTweet) {
+      for (var i = 0; i < emptyTweet.length; i++) {
+        emptyTweet[i].style.backgroundColor = "rgb(36,52,71)";
+      }
+    }
+
+    if (tweets) {
+      for (var _i6 = 0; _i6 < tweets.length; _i6++) {
+        tweets[_i6].style.backgroundColor = "rgb(36,52,71)";
+      }
+    }
+
+    if (replies) {
+      for (var _i7 = 0; _i7 < replies.length; _i7++) {
+        replies[_i7].style.backgroundColor = "rgb(27,40,54)";
+      }
+    }
+  } else {
+    // light mode active
+    if (emptyTweet) {
+      for (var _i8 = 0; _i8 < emptyTweet.length; _i8++) {
+        emptyTweet[_i8].style.backgroundColor = "white";
+      }
+    }
+
+    if (tweets) {
+      for (var _i9 = 0; _i9 < tweets.length; _i9++) {
+        tweets[_i9].style.backgroundColor = "white";
+      }
+    }
+
+    if (replies) {
+      for (var _i10 = 0; _i10 < replies.length; _i10++) {
+        replies[_i10].style.backgroundColor = "rgb(217, 235, 253)";
+      }
+    }
+  }
+
+  if (transparentDivs) {
+    for (var _i11 = 0; _i11 < transparentDivs.length; _i11++) {
+      transparentDivs[_i11].style.backgroundColor = "transparent";
+    }
+  }
 };

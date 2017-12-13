@@ -18,7 +18,6 @@ const router = (app) => {
   app.get('/getProfile', mid.requiresLogin, controllers.Account.getProfile);
   app.get('/maker', mid.requiresLogin, controllers.Tweet.makerPage);
   app.post('/maker', mid.requiresLogin, upload.array('photos', 12), controllers.Tweet.make);
-  // app.post('/photos/upload', upload.array('photos', 12), controllers.Tweet.upload);
   app.post('/change', mid.requiresLogin, controllers.Tweet.change);
   app.post('/delete', mid.requiresLogin, controllers.Tweet.delete);
   app.get('/', mid.requiresSecure, mid.requiresLogout, controllers.Account.loginPage);

@@ -132,11 +132,13 @@ const changePassword = (req, res) => {
   });
 };
 
+// function that handles not found pages on server
 const notFound = (req, res) => {
   res.status(404);
   res.render('notFound', { csrfToken: req.csrfToken() });
 };
 
+// function that handles account search requests on server
 const searchAccount = (req, res) =>
   // search for another account using displayname
   Account.AccountModel.searchDisplayName(req.body.search, (err, doc) => {
@@ -150,6 +152,7 @@ const searchAccount = (req, res) =>
     return res.json({ user: doc.displayname });
   });
 
+// function that handles follow requests on server
 const follow = (request, response) => {
   const req = request;
   const res = response;
@@ -217,6 +220,7 @@ const follow = (request, response) => {
   });
 };
 
+// function that gets account profile on server to display on browser client
 const getProfile = (req, res) =>
   // find requester's account in db and return the doc
    Account.AccountModel.searchIdForFollow(req.session.account._id, (err, doc) => {

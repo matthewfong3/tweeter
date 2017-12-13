@@ -31,6 +31,7 @@ const sendAjax = (type, action, data, processBool,success) => {
   });
 };
 
+// helper function that toggles on/off dark/night mode view
 const toggleDarkMode = () => {
   let checkbox = document.querySelector("#darkModeCheckBox");
   let body = document.body;
@@ -45,7 +46,7 @@ const toggleDarkMode = () => {
   let tweets = document.getElementsByClassName('tweet');
   let emptyTweet = document.getElementsByClassName('emptyTweet');
   let replies = document.getElementsByClassName('replyDiv');
-  let viewReplies = document.getElementsByClassName('viewReplies');
+  let profile = document.querySelector("#profile");
   
   // notFound only
   let errContent = document.querySelector("#errContent");
@@ -86,10 +87,9 @@ const toggleDarkMode = () => {
         }
       }
       
-      /*if(viewReplies){
-        for(let i = 0; i < viewReplies.length; i++)
-          viewReplies[i].style.
-      }*/
+      if(profile){
+        profile.style.backgroundColor = "rgb(36,52,71)";
+      }
       
       if(errContent){
         errContent.style.backgroundColor = "rgb(36,52,71)";
@@ -129,9 +129,66 @@ const toggleDarkMode = () => {
         }
       }
       
+      if(profile){
+        profile.style.backgroundColor = "white";
+      }
+      
       if(errContent){
         errContent.style.backgroundColor = "rgb(245, 248, 250)";
       }
     }
   });
+};
+
+// helper function that re-renders appropriate content depending on dark/light mode being active
+const checkDarkMode = () => {
+  let checkbox = document.querySelector("#darkModeCheckBox");
+  let emptyTweet = document.getElementsByClassName('emptyTweet');
+  let tweets = document.getElementsByClassName('tweet');
+  let replies = document.getElementsByClassName('replyDiv');
+  let transparentDivs = document.getElementsByClassName('transparentDiv');
+  
+  if(checkbox.checked){ // dark mode active
+    if(emptyTweet){
+      for(let i =  0; i < emptyTweet.length; i++){
+        emptyTweet[i].style.backgroundColor = "rgb(36,52,71)";
+      }
+    }
+    
+    if(tweets){
+      for(let i = 0; i < tweets.length; i++){
+        tweets[i].style.backgroundColor = "rgb(36,52,71)";
+      }
+    }
+    
+    if(replies){
+      for(let i = 0; i < replies.length; i++){
+        replies[i].style.backgroundColor = "rgb(27,40,54)";
+      }
+    }
+  } else { // light mode active
+    if(emptyTweet){
+      for(let i =  0; i < emptyTweet.length; i++){
+        emptyTweet[i].style.backgroundColor = "white";
+      }
+    }
+    
+    if(tweets){
+      for(let i = 0; i < tweets.length; i++){
+        tweets[i].style.backgroundColor = "white";
+      }
+    }
+    
+    if(replies){
+      for(let i = 0; i < replies.length; i++){
+        replies[i].style.backgroundColor = "rgb(217, 235, 253)";
+      }
+    }
+  }
+  
+  if(transparentDivs){
+    for(let i = 0; i < transparentDivs.length; i++){
+      transparentDivs[i].style.backgroundColor = "transparent";
+    }
+  }
 };

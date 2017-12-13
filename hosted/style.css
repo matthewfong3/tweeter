@@ -254,7 +254,7 @@ nav {
   background-color: #66bdff;
 }
 
-#tweetMessage, #imageInput, #replyMessage, #changeTweetMessage, #searchName {
+#tweetMessage, #replyMessage, #changeTweetMessage, #searchName {
   border-radius: 4px;
   padding: 5px;
 }
@@ -264,7 +264,7 @@ nav {
   text-align: center;
 }
 
-#imageInput, #replyMessage {
+#upload, #replyMessage {
   margin-top: 3px;
 }
 
@@ -341,6 +341,10 @@ hr {
 .replies {
   margin-top: 10px;
   border-radius: 5px;
+}
+
+.transparentDiv {
+  background-color: transparent;
 }
 
 .replyDiv {

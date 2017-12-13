@@ -18,7 +18,6 @@ const makeTweet = (req, res) => {
   if (!req.body.message) {
     return res.status(400).json({ error: 'Message is required' });
   }
-  console.log(req.files);
 
   const tweetData = {
     message: req.body.message,
@@ -28,13 +27,7 @@ const makeTweet = (req, res) => {
     comments: [],
   };
 
-  // don't use this anymore
-  if (req.body.imgData) {
-    tweetData.imgData = req.body.imgData;
-  }
-  
-  // this is meta
-  if(req.files){
+  if (req.files) {
     tweetData.imgData = req.files;
   }
 
@@ -200,11 +193,6 @@ const replyTweet = (req, res) => {
   });
 };
 
-const uploadFiles = (req, res) => {
-  console.log(req.files);
-  return;
-};
-
 module.exports.makerPage = makerPage;
 module.exports.getTweets = getTweets;
 module.exports.make = makeTweet;
@@ -212,4 +200,3 @@ module.exports.change = changeTweet;
 module.exports.delete = deleteTweet;
 module.exports.fav = favTweet;
 module.exports.reply = replyTweet;
-module.exports.upload = uploadFiles;

@@ -10,19 +10,16 @@ const handleTweet = (e) => {
   
   // source: https://stackoverflow.com/questions/21060247/send-formdata-and-string-data-together-through-jquery-ajax
   let formData = new FormData();
-  let file_data = $("#upload")[0].files;
-  for(let i = 0; i < file_data.length; i++) {
-    formData.append('photos', file_data[i]);
+  if($("#upload")[0]){
+    let file_data = $("#upload")[0].files;
+    for(let i = 0; i < file_data.length; i++) {
+      formData.append('photos', file_data[i]);
+    } 
   }
   let oth_data = $("#tweetForm").serializeArray();
   $.each(oth_data, (key, input) => {
     formData.append(input.name, input.value);
   });
-  
-  //console.log($("#tweetForm").serialize());
-  //console.dir(formData.get('photos'));
-  //console.dir(formData.get('message'));
-  //console.dir(formData.get('_csrf'));
   
   let url = $("#tweetForm").attr("action") + "?_csrf=" + formData.get('_csrf');
   
@@ -33,7 +30,7 @@ const handleTweet = (e) => {
   });
   
   // remove image input field if it exists
-  let imageInput = document.querySelector("#imageInput");
+  let imageInput = document.querySelector("#upload");
   if(imageInput) imageInput.parentNode.removeChild(imageInput);
   
   // change tweet placeholder text back to default
@@ -133,6 +130,7 @@ const handleFav = (csrf, tweetId) => {
   favButton.dataset.faved = "true";
 };
 
+// handles account searching to server
 const handleSearch = (e) => {
   e.preventDefault();
   
@@ -149,6 +147,7 @@ const handleSearch = (e) => {
   });
 };
 
+// handles follow request between accounts to server
 const handleFollow = (e) => {
   e.preventDefault();
   sendAjax('POST', $("#followAccountsForm").attr("action"), $("#followAccountsForm").serialize(), true, () => {
@@ -173,7 +172,6 @@ const TweetForm = (props) => {
         enctype="multipart/form-data"
       >
         <input id="tweetMessage" type="text" name="message" placeholder="What's happening?"/>
-        <input type="file" name="photos" id="upload" class="form-control"/>
         <input type="hidden" name="_csrf" value={props.csrf} />
         <input className="makeTweetSubmit" type="submit" value="Tweet"/>
         <div id="imageField"></div>
@@ -188,10 +186,10 @@ const createImageInput = () => {
   let imageField = document.querySelector('#imageField');
   if(imageField.childNodes.length === 0){
     let input = document.createElement('input');
-    input.id = "imageInput";
-    input.type = "text";
-    input.name = "imgData";
-    input.placeholder = "Image link";
+    input.id = "upload";
+    input.type = "file";
+    input.name = "photos";
+    input.className = "form-control";
   
     imageField.appendChild(input); 
   }
@@ -387,7 +385,7 @@ const MakeReplies = (props) => {
   
   // return list of replies
   return(
-    <div>
+    <div className="transparentDiv">
       {replies}
     </div>
   );
@@ -445,7 +443,6 @@ const TweetList = (props) => {
     // if an image is included in a tweet, store the data in a variable to be used
     let imgSrc;
     if(tweet.imgData[0]){
-      console.log(tweet.imgData);
       imgSrc = `/assets/uploads/${tweet.imgData[0].filename}`;
     }
     
@@ -487,8 +484,8 @@ const TweetList = (props) => {
   );
 };
 
+// function that encapsulates profile search and profile account info into one div to be rendered to page
 const LoadProfile = (props) => {
-  //console.log(props.following);
   return(
     <div>
       <form id="searchAccountsForm"
@@ -516,10 +513,12 @@ const loadTweetsFromServer = (csrf) => {
     ReactDOM.render(
       <TweetList csrf={csrf} displayname={data.displayname} tweets={data.tweets}/>, document.querySelector("#tweets")
     );
+    checkDarkMode();
   });
 };
 //endregion
 
+// function that renders content for searched account result
 const loadSearchAccount = (csrf, data) => {
   sendAjax('GET', '/getTweets', null, true, () => { 
     ReactDOM.render(
@@ -542,6 +541,7 @@ const loadSearchAccount = (csrf, data) => {
   });
 };
 
+// function that renders personal account's profile onto the page
 const loadProfileFromServer = (csrf) => {
   sendAjax('GET', '/getProfile', null, true, (data) => {
     ReactDOM.render(
