@@ -224,6 +224,9 @@ const ChangePasswordWindow = (props) => {
 
 // function that renders the password change form into appContent
 const createPasswordWindow = (csrf) => {
+  let profile = document.querySelector("#profile");
+  profile.style.display = "none";
+  
   ReactDOM.render(
     <ChangePasswordWindow csrf={csrf} />, document.querySelector("#appContent")
   );
