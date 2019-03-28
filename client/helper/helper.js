@@ -9,7 +9,7 @@ const redirect = (response) => {
 };
 
 // function that sends ajax requests to the server
-const sendAjax = (type, action, data, processBool,success) => {
+const sendAjax = (type, action, data, processBool, success) => {
   let contentTypeVal;
   
   if(!processBool) contentTypeVal = false;

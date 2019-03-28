@@ -139,7 +139,7 @@ const notFound = (req, res) => {
 };
 
 // function that handles account search requests on server
-const searchAccount = (req, res) =>
+const searchAccount = (req, res) => {
   // search for another account using displayname
   Account.AccountModel.searchDisplayName(req.body.search, (err, doc) => {
     if (err) {
@@ -151,6 +151,7 @@ const searchAccount = (req, res) =>
     }
     return res.json({ user: doc.displayname });
   });
+};
 
 // function that handles follow requests on server
 const follow = (request, response) => {
@@ -221,15 +222,16 @@ const follow = (request, response) => {
 };
 
 // function that gets account profile on server to display on browser client
-const getProfile = (req, res) =>
+const getProfile = (req, res) => {
   // find requester's account in db and return the doc
-   Account.AccountModel.searchIdForFollow(req.session.account._id, (err, doc) => {
-     if (err) {
-       console.log(err);
-       return res.status(400).json({ error: 'An error occurred' });
-     }
-     return res.json(doc);
-   });
+  Account.AccountModel.searchIdForFollow(req.session.account._id, (err, doc) => {
+    if (err) {
+      console.log(err);
+      return res.status(400).json({ error: 'An error occurred' });
+    }
+    return res.json(doc);
+  });
+};
 
 // function that sends the user back a new csrfToken
 const getToken = (request, response) => {

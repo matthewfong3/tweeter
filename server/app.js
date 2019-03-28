@@ -16,23 +16,27 @@ const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
 const dbURL = process.env.MONGODB_URI || 'mongodb://localhost/Tweeter';
 
-mongoose.connect(dbURL, (err) => {
+mongoose.connect(dbURL, { useNewUrlParser: true });
+/* mongoose.connect(dbURL, (err) => {
   if (err) {
-    console.log('Could not connect to datebase');
+    console.log('Could not connect to database');
     throw err;
   }
-});
+});*/
+
+mongoose.set('useCreateIndex', true); // https://github.com/Automattic/mongoose/issues/6890
 
 let redisURL = {
   hostname: 'localhost',
   port: 6379,
 };
 
-let redisPASS;
+let [indexATzero, redisPASS] = [null, 0];
 
 if (process.env.REDISCLOUD_URL) {
   redisURL = url.parse(process.env.REDISCLOUD_URL);
-  redisPASS = redisURL.auth.split(':')[1];
+  [indexATzero, redisPASS] = redisURL.auth.split(':');
+  console.log(indexATzero); // ??? what is this?
 }
 
 const router = require('./router.js');
