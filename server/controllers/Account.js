@@ -1,5 +1,6 @@
 const models = require('../models');
-const Account = models.Account;
+
+const { Account } = models; // const Account = models.Account;
 
 // function that renders login page
 const loginPage = (req, res) => {
@@ -188,29 +189,29 @@ const follow = (request, response) => {
     accountPromise.then(() =>
       // find requester's account in db and increment following count
       // use req.session.account._id
-       Account.AccountModel.searchIdForFollow(req.session.account._id, (err2, doc2) => {
-         if (err2) {
-           console.log(err2);
-           return res.status(400).json({ error: 'An error occurred' });
-         }
+      Account.AccountModel.searchIdForFollow(req.session.account._id, (err2, doc2) => {
+        if (err2) {
+          console.log(err2);
+          return res.status(400).json({ error: 'An error occurred' });
+        }
 
-         const changedDoc2 = doc2;
-         changedDoc2.following.push(req.body.displayname);
+        const changedDoc2 = doc2;
+        changedDoc2.following.push(req.body.displayname);
 
-         const accountPromise2 = doc2.save();
+        const accountPromise2 = doc2.save();
 
-         accountPromise2.then(() => {
-           req.session.account = Account.AccountModel.toAPI(doc2);
-           res.json({ redirect: '/maker' });
-         });
+        accountPromise2.then(() => {
+          req.session.account = Account.AccountModel.toAPI(doc2);
+          res.json({ redirect: '/maker' });
+        });
 
-         accountPromise2.catch((error2) => {
-           console.log(error2);
-           return res.status(400).json({ error2 });
-         });
+        accountPromise2.catch((error2) => {
+          console.log(error2);
+          return res.status(400).json({ error2 });
+        });
 
-         return accountPromise2;
-       }));
+        return accountPromise2;
+      }));
 
     accountPromise.catch((error) => {
       console.log(error);

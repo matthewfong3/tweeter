@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+
 mongoose.Promise = global.Promise;
 
 let TweetModel = {};
@@ -40,12 +41,12 @@ const TweetSchema = new mongoose.Schema({
   },
 });
 
-TweetSchema.statics.toAPI = (doc) => ({
+TweetSchema.statics.toAPI = doc => ({
   message: doc.message,
 });
 
 // function that finds all tweets in db
-TweetSchema.statics.findAll = (callback) => TweetModel.find({})
+TweetSchema.statics.findAll = callback => TweetModel.find({})
   .select('displayname message createdDate imgData favorites comments').exec(callback);
 
 // function that finds tweets only specific to owner

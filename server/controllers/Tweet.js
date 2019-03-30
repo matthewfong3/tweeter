@@ -1,5 +1,6 @@
 const models = require('../models');
-const Tweet = models.Tweet;
+
+const { Tweet } = models; // const Tweet = models.Tweet;
 
 // function that renders tweet content into app page
 const makerPage = (req, res) => {

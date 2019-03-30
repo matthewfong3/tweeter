@@ -22,7 +22,7 @@ mongoose.connect(dbURL, { useNewUrlParser: true });
     console.log('Could not connect to database');
     throw err;
   }
-});*/
+}); */
 
 mongoose.set('useCreateIndex', true); // https://github.com/Automattic/mongoose/issues/6890
 
