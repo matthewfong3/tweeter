@@ -1,0 +1,414 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+
+body{
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background-color: rgb(230, 236, 240);
+    font-family: 'Open Sans', sans-serif;
+}
+
+/*nav bar*/
+/* references: https://stackoverflow.com/questions/29036231/how-can-i-have-a-position-fixed-behaviour-for-a-flexbox-sized-element */
+nav{
+    background-color: rgb(245, 248, 250);
+    border-bottom: 1px solid #ccc;
+    box-shadow: 0 1px #aaa;
+    display: flex;
+    justify-content: space-between;
+    height: 50px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+}
+
+nav #navLeft{
+    display: flex;
+    align-items: center;
+}
+
+nav #navRight{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: 10px;
+}
+
+nav #logo{
+    width: 50px;
+    height: 50px;
+}
+
+nav #darkModeCheckbox{
+    vertical-align: middle;
+    margin: 0;
+}
+
+nav .navlink{
+    color: white;
+    font-size: 1.3em;
+}
+
+nav .navlink a,
+nav .navlink a:link,
+nav .navlink a:visited,
+nav .navlink a:active{
+    color: white;
+    text-decoration: none;
+    background-color: #55acee;
+    transition: background-color 0.4s ease;
+    border-radius: 10px;
+    padding: 2px 6px;
+}
+
+nav .navlink a:hover{
+    background-color: #66bdff;
+    transition: background-color 0.8s ease;
+}
+
+/*main content*/
+#content{
+    display: flex;
+    justify-content: space-evenly;
+}
+
+/*password content*/
+#passwordDiv{
+    background-color: rgb(245, 248, 250);
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 30%;
+    padding: 5%;
+}
+
+#passwordForm{
+    text-align: center;
+    font-size: 1.2em;
+}
+
+#passwordForm label{
+    display: inline-block;
+    text-align: right;
+    width: 40%;
+    margin-right: 4%;
+}
+
+/*left column content*/
+#profile{
+    height: 300px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: rgb(245, 248, 250);
+    text-align: center;
+    width: 350px;
+}
+
+#profile hr{
+    margin: 0;
+}
+
+#searchAccountForm{
+    margin: 15px 0px;
+}
+
+#searchAccountForm #searchUsername{
+    border-radius: 4px;
+    text-align: center;
+}
+
+#searchAccountForm #searchUsername:focus{
+    outline: none;
+    box-shadow: 0px 0px 1px 1px #55acee;
+}
+
+#followAccountForm{
+    margin-bottom: 15px;
+}
+
+/*middle column content*/
+#tweetsSection{
+    background-color: rgb(245, 248, 250);
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 600px;
+}
+
+.tweetFormSubmit{
+    float: right;
+}
+
+.editTweetFormSubmit,
+.replyTweetFormSubmit{
+    margin-left: 1%;
+}
+
+.tweetFormSubmit,
+.editTweetFormSubmit,
+.replyTweetFormSubmit{
+    font-size: 1.1em;
+    background-color: #55acee;
+    color: white;
+    transition: background-color 0.4s ease;
+    text-decoration: none;
+    border-radius: 4px;
+    border-color: #66acee;
+}
+
+.tweetFormSubmit:link, .tweetFormSubmit:visited, .tweetFormSubmit:active,
+.editTweetFormSubmit:link, .editTweetFormSubmit:visited, .editTweetFormSubmit:active,
+.replyTweetFormSubmit:link, .replyTweetFormSubmit:visited, .replyTweetFormSubmit:active{
+    color: white;
+}
+
+.tweetFormSubmit:hover,
+.editTweetFormSubmit:hover,
+.replyTweetFormSubmit:hover,
+.optionsContainer button:hover,
+.deleteTweetContainer button:hover,
+.deleteReplyTweetContainer button:hover{
+    background-color: #66bdff;
+    transition: background-color 0.8s ease;
+    cursor: pointer;
+}
+
+.optionsContainer{
+    position: relative;
+    float: right;
+    left: 100px;
+    top: 20px;
+}
+
+.deleteReplyTweetContainer{
+    position: relative;
+    float: right;
+    left: 60px;
+}
+
+.optionsContainer button,
+.deleteReplyTweetContainer button{
+    background-color: #55acee;
+    color: rgb(245, 248, 250);
+    border-radius: 4px;
+    border-color: #66acee;
+    font-size: 1.1em;
+    display: block;
+}
+
+.deleteTweetContainer button,
+.deleteReplyTweetContainer button{
+    display: inline-block;
+}
+
+/*right column content*/
+#ads{
+    text-align: center;
+    width: 350px;
+}
+
+#ads img{
+    background-size: cover;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ccc;
+    width: 100%;
+}
+
+/*text fields*/
+#oldPassField,
+#newPass1Field,
+#newPass2Field{
+    text-align: center;
+    width: 40%;
+    border-radius: 4px;
+}
+
+#oldPassField:focus,
+#newPass1Field:focus,
+#newPass2Field:focus{
+    outline: none;
+    box-shadow: 0px 0px 1px 1px #55acee;
+}
+
+/*submit button*/
+.formSubmit{
+    display: block;
+    margin: 0 auto;
+    margin-top: 2%;
+    font-size: 1.1em;
+    background-color: #55acee;
+    color: white;
+    transition: background-color 0.4s ease;
+    text-decoration: none;
+    border-radius: 4px;
+    border-color: #66acee;
+}
+
+.formSubmit:link,
+.formSubmit:visited,
+.formSubmit:active{
+    color: white;
+}
+
+.formSubmit:hover{
+    background-color: #338acc;
+    transition: background-color 0.4s ease;
+    cursor: pointer;
+}
+
+/*create a tweet form*/
+#createTweet{
+    background-color: rgb(232, 245, 253);
+    border: 1px solid #ccc;
+    padding: 2%;
+}
+
+#tweetForm #messageField{
+    border-radius: 4px;
+    width: 400px;
+}
+
+#tweetForm #messageField:focus{
+    outline: none;
+    box-shadow: 0px 0px 1px 1px #55acee;
+}
+
+/*upload files button*/
+.filesInput,
+.replyFilesInput{
+    display: none;
+}
+
+.uploadFiles,
+.replyUploadFiles{
+    cursor: pointer;
+    width: 25px;
+    height: 25px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.replyUploadFiles{
+    margin-left: 3px;
+}
+
+/*tweets list*/
+.tweet,
+.emptyTweet{
+    border: 1px solid #ccc;
+    background-color: rgb(245, 248, 250);
+    padding: 3%;
+}
+
+.tweetUsername{
+    margin: 0;
+}
+
+.emptyTweet{
+    margin: 0 auto;
+    text-align: center;
+    background-color: rgb(217, 235, 253);
+}
+
+/*center files in the div of each tweet*/
+#tweetFilesDiv div,
+.replyFilesDiv div{
+    text-align: center;
+}
+
+#tweetFilesDiv .images,
+#tweetFilesDiv .video,
+.replyFilesDiv .images,
+.replyFilesDiv .video{
+    vertical-align: middle;
+    margin: 2px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+
+.dropdownIcon,
+.replyDropdownIcon{
+    width: 25px;
+    height: 25px;
+    float: right;
+}
+
+.dropdownIcon:hover,
+.replyDropdownIcon:hover{
+    cursor: pointer;
+}
+
+.replyButton{
+    margin-right: 1%;
+}
+
+.favButton{
+    margin-right: 0.5%;
+}
+
+.replyButton,
+.favButton{
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+}
+
+.replyButton:hover,
+.favButton:hover{
+    cursor: pointer;
+}
+
+.tweetFavoritesCount{
+    vertical-align: middle;
+}
+
+.editTweetMessage{
+    border-radius: 4px;
+}
+
+.editTweetMessage:focus{
+    outline: none;
+    box-shadow: 0px 0px 1px 1px #55acee;
+}
+
+.replyMessage{
+    border-radius: 4px;
+}
+
+.replyMessage:focus{
+    outline: none;
+    box-shadow: 0px 0px 1px 1px #55acee;
+}
+
+/*replies section*/
+.viewReplies{
+    text-decoration: none;
+    color: black;
+    float: right;
+}
+
+.replyDiv{
+    border-radius: 4px;
+    background-color: rgb(217, 235, 253);
+    margin-top: 4px;
+    padding: 15px 10px;
+}
+
+.replyDiv span{
+    display: inline-block;
+    margin-bottom: 5px;
+}
+
+.replyDiv h3{
+    margin: 0 auto;
+    text-align: center;
+}
+
+/*error section*/
+#errorContent{
+    text-align: center;
+    margin: 0;
+    margin-top: 5%;
+}

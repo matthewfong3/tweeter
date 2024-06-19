@@ -1,0 +1,140 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+
+body{
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background-color: rgb(230, 236, 240);
+    font-family: 'Open Sans', sans-serif;
+}
+
+/*nav bar*/
+/* references: https://stackoverflow.com/questions/29036231/how-can-i-have-a-position-fixed-behaviour-for-a-flexbox-sized-element */
+nav{
+    background-color: rgb(245, 248, 250);
+    border-bottom: 1px solid #ccc;
+    box-shadow: 0 1px #aaa;
+    display: flex;
+    justify-content: space-between;
+    height: 50px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+}
+
+nav #navLeft{
+    display: flex;
+    align-items: center;
+}
+
+nav #navRight{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: 10px;
+}
+
+nav #logo{
+    width: 50px;
+    height: 50px;
+}
+
+nav #darkModeCheckbox{
+    vertical-align: middle;
+    margin: 0;
+}
+
+nav .navlink{
+    color: white;
+    font-size: 1.3em;
+}
+
+nav .navlink a,
+nav .navlink a:link,
+nav .navlink a:visited,
+nav .navlink a:active{
+    color: white;
+    text-decoration: none;
+    background-color: #55acee;
+    transition: background-color 0.4s ease;
+    border-radius: 10px;
+    padding: 2px 6px;
+}
+
+nav .navlink a:hover{
+    background-color: #66bdff;
+    transition: background-color 0.8s ease;
+}
+
+/*main content*/
+#content{
+    background-color: rgb(245, 248, 250);
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin: 0 auto;
+    width: 30%;
+    margin-top: 10%;  
+    padding: 5%;
+}
+
+.mainForm{
+    font-size: 1.2em;
+    text-align: center;
+}
+
+.mainForm label{
+    display: inline-block;
+    text-align: right;
+    width: 40%;
+    margin-right: 4%;
+}
+
+/*text fields*/
+#emailField,
+#usernameField,
+#pass1Field,
+#pass2Field{
+    text-align: center;
+    width: 40%;
+    border-radius: 4px;
+}
+
+#emailField:focus,
+#usernameField:focus,
+#pass1Field:focus,
+#pass2Field:focus{
+    outline: none;
+    box-shadow: 0px 0px 1px 1px #55acee;
+}
+
+/*submit button*/
+.formSubmit{
+    display: block;
+    margin: 0 auto;
+    margin-top: 4%;
+    font-size: 1.1em;
+    background-color: #55acee;
+    color: white;
+    transition: background-color 0.4s ease;
+    text-decoration: none;
+    border-radius: 4px;
+    border-color: #66acee;
+}
+
+.formSubmit:link,
+.formSubmit:visited,
+.formSubmit:active{
+    color: white;
+}
+
+.formSubmit:hover{
+    background-color: #338acc;
+    transition: background-color 0.4s ease;
+}
+
+/*error section*/
+#errorContent{
+    text-align: center;
+}

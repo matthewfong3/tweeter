@@ -1,8 +1,0 @@
-dropdown icon: http://www.freeiconspng.com/img/6684
-unfill heart icon: https://image.flaticon.com/icons/png/128/126/126471.png
-fill heart icon: http://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/heart-icon.png
-reply icon: https://d30y9cdsu7xlg0.cloudfront.net/png/52978-200.png
-upload image icon: https://d30y9cdsu7xlg0.cloudfront.net/png/3927-200.png
-ads image: https://i.imgflip.com/ehd7p.jpg
-ads2 image: https://www.randallreilly.com/wp-content/uploads/sites/26/2013/09/fry-meme-banner-ads.jpg
-sad bird image: https://i.pinimg.com/originals/8f/2c/b4/8f2cb44d3df275ae4c8af461f857d83e.png

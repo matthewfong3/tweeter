@@ -1,0 +1,5 @@
+features/implementations:
+-save dark mode setting to user account so on page refresh it doesn't reset to light mode view?
+-lightbox on images?
+-profile images?
+-when searching for user account, any interaction will redirects to main app page upon completion. maybe we want to stay on 'their profile' page?

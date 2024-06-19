@@ -1,50 +1,52 @@
 {
-  "name": "project2",
+  "name": "tweeter",
   "version": "1.0.0",
   "engines": {
-    "node": ">=10.15.3",
-    "npm": "6.4.1"
+    "node": "21.7.2",
+    "npm": "10.5.0"
   },
-  "description": "twitter-like social app project",
+  "description": "twitter app clone",
   "main": "./server/app.js",
   "scripts": {
-    "test": "echo \"Tests complete\"",
     "start": "node ./server/app.js",
     "pretest": "eslint ./server --fix",
+    "test": "echo \"Tests Complete\"",
     "nodemon": "nodemon --watch ./server ./server/app.js",
-    "buildLoginBundle": "babel ./client/login ./client/helper --presets react --out-file ./hosted/loginBundle.js",
-    "buildAppBundle": "babel ./client/app ./client/helper --presets react --out-file ./hosted/bundle.js",
-    "buildNotFoundBundle": "babel ./client/helper --presets react --out-file ./hosted/notFoundBundle.js",
-    "build": "npm run buildLoginBundle && npm run buildAppBundle && npm run buildNotFoundBundle",
-    "watchLoginBundle": "babel --watch ./client/login ./client/helper --presets react --out-file ./hosted/loginBundle.js",
-    "watchAppBundle": "babel --watch ./client/app ./client/helper --presets react --out-file ./hosted/bundle.js",
-    "watchNotFoundBundle": "babel --watch ./client/helper --presets react --out-file ./hosted/notFoundBundle.js"
+    "buildLoginBundle": "babel ./client/login ./client/helper --presets @babel/preset-react --out-file ./hosted/loginBundle.js",
+    "buildAppBundle": "babel ./client/app ./client/helper --presets @babel/preset-react --out-file ./hosted/appBundle.js",
+    "buildNotFoundBundle": "babel ./client/notFound ./client/helper --presets @babel/preset-react --out-file ./hosted/notFoundBundle.js", 
+    "build": "npm run buildLoginBundle && npm run buildAppBundle",
+    "watchLoginBundle": "babel --watch ./client/login ./client/helper --presets @babel/preset-react --out-file ./hosted/loginBundle.js",
+    "watchAppBundle": "babel --watch ./client/app ./client/helper --presets @babel/preset-react --out-file ./hosted/appBundle.js",
+    "watchNotFoundBundle": "babel --watch ./client/notFound ./client/helper --presets @babel/preset-react --out-file ./hosted/notFoundBundle.js"
   },
-  "author": "Matthew Fong",
+  "author": "matthew fong",
   "license": "ISC",
-  "dependencies": {
-    "atob": "^2.0.3",
-    "body-parser": "^1.15.0",
-    "compression": "^1.6.1",
-    "connect-redis": "^3.0.2",
-    "cookie-parser": "^1.3.3",
-    "csurf": "^1.8.3",
-    "express": "^4.16.2",
-    "express-handlebars": "^3.0.0",
-    "express-session": "^1.13.0",
-    "helmet": "^1.3.0",
-    "mongoose": "^5.4.3",
-    "multer": "^1.3.0",
-    "serve-favicon": "^2.3.0",
-    "underscore": "^1.8.3"
-  },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-react": "^6.24.1",
-    "eslint": "^4.14.0",
-    "eslint-config-airbnb": "^16.1.0",
-    "eslint-plugin-import": "^2.8.0",
-    "nodemon": "^1.14.3"
+    "@babel/cli": "^7.24.5",
+    "@babel/core": "^7.24.5",
+    "@babel/preset-react": "^7.24.1",
+    "@eslint/js": "^9.2.0",
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-vue": "^9.25.0",
+    "globals": "^15.1.0",
+    "nodemon": "^3.1.0"
+  },
+  "dependencies": {
+    "@dr.pogodin/csurf": "^1.13.0",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "compression": "^1.7.4",
+    "connect-redis": "^7.1.1",
+    "cookie-parser": "^1.4.6",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "mongoose": "^8.3.4",
+    "multer": "^1.4.5-lts.1",
+    "redis": "^4.6.13",
+    "serve-favicon": "^2.5.0"
   }
 }

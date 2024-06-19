@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8">
+        <title>Not Found</title>
+        <link href="assets/css/notFound.css" type="text/css" rel="stylesheet">
+        <link rel="shortcut icon" href="assets/img/favicon.png"/>
+
+        <script crossorigin src="https://unpkg.com/react@16.7.0/umd/react.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@16.7.0/umd/react-dom.production.min.js"></script>
+        <script crossorigin src="https://unpkg.com/prop-types@15.6/prop-types.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.25.0/babel.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/remarkable/2.0.1/remarkable.min.js" integrity="sha512-skYYbQHAuOTpeJTthhUH3flZohep8blA+qjZOY0VqmfXMDiYcWxu29F5UbxU4LxaIpGkRBk+3Qf8qaXfd9jngg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    </head>
+    <body>
+        <nav id="nav">
+            <a href="/login"><img id="logo" src="assets/img/face.png" alt="face logo"/></a>
+            <span id="darkModeDiv">
+                <label for="darkMode">Dark mode:</label>
+                <input id="darkModeCheckbox" type="checkbox" name="darkMode"/>
+            </span>
+        </nav>
+
+        <section id="errorContent">
+            <h2 id="errorMessage">The page you are looking for has not taken flight yet</h2>
+            <img src="assets/img/sadBird.png" alt="Sad Bird">
+        </section>
+
+        <script src="assets/notFoundBundle.js"></script>
+    </body>
+</html>
