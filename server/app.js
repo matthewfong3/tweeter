@@ -31,6 +31,8 @@ const RedisStore = require('connect-redis').default; // as of connect-redis v7.0
 // mongodb address to connect to
 const dbURL = process.env.MONGODB_URI || 'mongodb://localhost/tweeterDB'; //|| 'mongodb://127.0.0.1/tweeterDB';
 
+const url = require('url');
+
 // call mongoose's connect function and pass in the url.
 // If there are any errors connecting, we will throw it and kill the server.
 // Once connected, the mongoose package will stay connected for every file
