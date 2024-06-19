@@ -54,6 +54,10 @@ let redisURL = {
     port: 6379
 };
 
+if(process.env.REDISCLOUD_URL){
+    redisURL = url.parse(process.env.REDISCLOUD_URL);
+}
+
 let redisStore = new RedisStore({
     client: redisClient,
     prefix: "myTweeterApp:",
