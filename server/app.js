@@ -57,7 +57,7 @@ let redisURL = {
 };
 
 if(process.env.REDISCLOUD_URL){
-    redisURL = url.parse(process.env.REDISCLOUD_URL);
+    redisURL = process.env.REDISCLOUD_URL;
 }
 
 let redisStore = new RedisStore({
