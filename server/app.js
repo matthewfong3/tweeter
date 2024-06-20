@@ -45,27 +45,37 @@ mongoose.connect(dbURL)
         });
 
 // initialize redis client
-let redisClient = redis.createClient();
+let redisClient;
+let redisStore;
+if(process.env.REDIS_URL){
+    redisClient = redis.createClient({
+        url: process.env.REDIS_URL
+    });
+
+    let redisStore = new RedisStore({
+        client: redisClient,
+        prefix: "myTweeterApp:"
+    });
+}
+else{
+    redisClient = redis.createClient();
+
+    // initialize redis store
+    let redisURL = {
+        hostname: 'localhost',
+        port: 6379
+    };
+
+    redisStore = new RedisStore({
+        client: redisClient,
+        prefix: "myTweeterApp:",
+        host: redisURL.hostname,
+        port: redisURL.port
+    });
+}
 redisClient.connect()
     .then(() => console.log('Connected to redis cli!'))  
     .catch(console.error);
-
-// initialize redis store
-let redisURL = {
-    hostname: 'localhost',
-    port: 6379
-};
-
-if(process.env.REDISCLOUD_URL){
-    redisURL = process.env.REDISCLOUD_URL;
-}
-
-let redisStore = new RedisStore({
-    client: redisClient,
-    prefix: "myTweeterApp:",
-    host: redisURL.hostname,
-    port: redisURL.port
-});
 
 // port for our express node app to listen on
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
