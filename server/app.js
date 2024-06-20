@@ -52,7 +52,7 @@ if(process.env.REDIS_URL){
         url: process.env.REDIS_URL
     });
 
-    let redisStore = new RedisStore({
+    redisStore = new RedisStore({
         client: redisClient,
         prefix: "myTweeterApp:"
     });
