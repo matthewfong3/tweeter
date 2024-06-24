@@ -120,9 +120,13 @@ const favTweet = async (req, res) => {
                 if(f === req.session.account.username) {
                     const index = doc.favorites.indexOf(req.session.account.username);
                     doc.favorites.splice(index, 1);
+                    break;
                 }
                 // favorite a tweet
-                else doc.favorites.push(req.session.account.username);
+                else {
+                    doc.favorites.push(req.session.account.username);
+                    break;
+                }
             }
         }
 
